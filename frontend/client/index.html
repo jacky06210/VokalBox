@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VokalBox - Répondeur Vocal IA pour Restaurants</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="logo">
+                    <h1>🎙️ VokalBox</h1>
+                </div>
+                <div class="nav-links">
+                    <a href="#fonctionnalites">Fonctionnalités</a>
+                    <a href="#tarifs">Tarifs</a>
+                    <a href="#contact">Contact</a>
+                    <a href="#commander" class="btn-primary">Commander</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Votre Répondeur Vocal IA</h1>
+                <h2>Automatisez vos prises de commandes téléphoniques</h2>
+                <p class="hero-subtitle">
+                    Ne ratez plus jamais une commande. Notre IA répond 24/7 à vos clients,
+                    prend leurs commandes et les transmet directement à votre restaurant.
+                </p>
+                <div class="hero-features">
+                    <div class="feature-item">✅ Disponible 24/7</div>
+                    <div class="feature-item">✅ Installation en 24h</div>
+                    <div class="feature-item">✅ 49€/mois sans engagement</div>
+                </div>
+                <a href="#commander" class="btn-hero">Commander maintenant</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fonctionnalités -->
+    <section id="fonctionnalites" class="features">
+        <div class="container">
+            <h2 class="section-title">Comment ça marche ?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h3>1. Photographiez votre menu</h3>
+                    <p>Prenez simplement en photo vos menus existants. Notre IA les numérise automatiquement.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>2. On configure votre IA</h3>
+                    <p>Nous paramétrons votre assistant vocal en moins de 24h avec votre menu et vos horaires.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📞</div>
+                    <h3>3. Vos clients appellent</h3>
+                    <p>Notre IA répond automatiquement, prend les commandes et calcule le total.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>4. Vous recevez les commandes</h3>
+                    <p>Consultez toutes vos commandes en temps réel sur votre tableau de bord.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tarifs -->
+    <section id="tarifs" class="pricing">
+        <div class="container">
+            <h2 class="section-title">Un tarif simple et transparent</h2>
+            <div class="pricing-card">
+                <div class="price-tag">
+                    <span class="price">49€</span>
+                    <span class="period">/mois</span>
+                </div>
+                <h3>Tout inclus, sans engagement</h3>
+                <ul class="pricing-features">
+                    <li>✅ Répondeur vocal IA disponible 24/7</li>
+                    <li>✅ Numéro de téléphone dédié</li>
+                    <li>✅ Numérisation de votre menu</li>
+                    <li>✅ Tableau de bord en temps réel</li>
+                    <li>✅ Gestion des promotions</li>
+                    <li>✅ Support technique inclus</li>
+                    <li>✅ Mises à jour automatiques</li>
+                </ul>
+                <a href="#commander" class="btn-pricing">Commencer maintenant</a>
+                <p class="pricing-note">Sans engagement - Résiliable à tout moment</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulaire de commande -->
+    <section id="commander" class="order-form">
+        <div class="container">
+            <h2 class="section-title">Commandez votre répondeur vocal</h2>
+            <p class="form-subtitle">Remplissez ce formulaire et commencez à utiliser VokalBox dès demain !</p>
+            
+            <div class="form-container">
+                <form id="orderForm">
+                    <!-- Étape 1 : Informations restaurant -->
+                    <div class="form-step active" data-step="1">
+                        <h3>📍 Informations de votre restaurant</h3>
+                        
+                        <div class="form-group">
+                            <label for="restaurantName">Nom du restaurant *</label>
+                            <input type="text" id="restaurantName" name="restaurantName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Adresse complète *</label>
+                            <input type="text" id="address" name="address" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="zipCode">Code postal *</label>
+                                <input type="text" id="zipCode" name="zipCode" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="city">Ville *</label>
+                                <input type="text" id="city" name="city" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="phone">Téléphone *</label>
+                                <input type="tel" id="phone" name="phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hours">Horaires d'ouverture</label>
+                            <textarea id="hours" name="hours" rows="3" placeholder="Ex: Lundi-Vendredi 11h-14h30 et 18h-22h"></textarea>
+                        </div>
+
+                        <button type="button" class="btn-next" onclick="nextStep(2)">Suivant →</button>
+                    </div>
+
+                    <!-- Étape 2 : Upload menus -->
+                    <div class="form-step" data-step="2">
+                        <h3>📸 Photos de votre menu</h3>
+                        <p class="step-description">Prenez en photo vos menus (cartes, ardoises, affichages). Maximum 10 photos.</p>
+                        
+                        <div class="upload-zone" id="uploadZone">
+                            <div class="upload-icon">📤</div>
+                            <p>Cliquez ou glissez vos photos ici</p>
+                            <input type="file" id="menuPhotos" name="menuPhotos" accept="image/*" multiple hidden>
+                        </div>
+
+                        <div id="previewContainer" class="preview-container"></div>
+
+                        <div class="form-buttons">
+                            <button type="button" class="btn-back" onclick="prevStep(1)">← Retour</button>
+                            <button type="button" class="btn-next" onclick="nextStep(3)">Suivant →</button>
+                        </div>
+                    </div>
+
+                    <!-- Étape 3 : Paiement -->
+                    <div class="form-step" data-step="3">
+                        <h3>💳 Paiement sécurisé</h3>
+                        
+                        <div class="payment-summary">
+                            <div class="summary-item">
+                                <span>Abonnement mensuel VokalBox</span>
+                                <span class="summary-price">49,00 €</span>
+                            </div>
+                            <div class="summary-total">
+                                <span>Total à payer aujourd'hui</span>
+                                <span class="total-price">49,00 €</span>
+                            </div>
+                            <p class="payment-note">Facturation mensuelle - Résiliable à tout moment</p>
+                        </div>
+
+                        <div id="card-element" class="card-element"></div>
+                        <div id="card-errors" class="card-errors"></div>
+
+                        <div class="form-buttons">
+                            <button type="button" class="btn-back" onclick="prevStep(2)">← Retour</button>
+                            <button type="submit" class="btn-submit" id="submitBtn">
+                                <span id="submitText">Valider et payer 49€</span>
+                                <span id="submitLoader" class="loader" style="display:none;"></span>
+                            </button>
+                        </div>
+
+                        <p class="legal-note">
+                            En validant, vous acceptez nos <a href="#">conditions générales</a> et 
+                            notre <a href="#">politique de confidentialité</a>.
+                        </p>
+                    </div>
+
+                    <!-- Étape 4 : Confirmation -->
+                    <div class="form-step" data-step="4">
+                        <div class="success-message">
+                            <div class="success-icon">✅</div>
+                            <h3>Commande validée !</h3>
+                            <p>Merci pour votre confiance. Voici les prochaines étapes :</p>
+                            <ul class="next-steps">
+                                <li>📧 Vous allez recevoir un email de confirmation</li>
+                                <li>🤖 Notre équipe numérise votre menu (sous 24h)</li>
+                                <li>📞 Vous recevrez votre numéro de téléphone dédié</li>
+                                <li>🚀 Votre répondeur vocal sera opérationnel !</li>
+                            </ul>
+                            <div class="success-actions">
+                                <a href="/cdn-cgi/l/email-protection#3a5955544e5b594e7a4c55515b56585542145c48" class="btn-contact">Nous contacter</a>
+                                <a href="/" class="btn-home">Retour à l'accueil</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>VokalBox</h4>
+                    <p>Répondeur vocal IA pour restaurants</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d0b3bfbea4b1b3a490a6bfbbb1bcb2bfa8feb6a2">[email&#160;protected]</a></p>
+                    <p>Tél: +33 4 93 XX XX XX</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Légal</h4>
+                    <a href="#">Mentions légales</a>
+                    <a href="#">CGV</a>
+                    <a href="#">Confidentialité</a>
+                </div>
+            </div>
+            <

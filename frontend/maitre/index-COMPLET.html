@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VocalBoxMaître - Numérisation de Menus</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Login Page */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .login-box h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .login-box .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .login-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-error {
+            background: #fee;
+            color: #c00;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Main App */
+        .app-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header-actions button {
+            padding: 10px 20px;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-actions button:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .header-actions button.danger {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .header-actions button.danger:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .restaurant-name {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            background: #e8e8e8;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            margin-bottom: -3px;
+        }
+
+        .tab .badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+
+        /* Content */
+        .content {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            background: white;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            background: #f0f0ff;
+            border-color: #764ba2;
+        }
+
+        .upload-zone i {
+            font-size: 4em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-zone h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-zone p {
+            color: #666;
+        }
+
+        /* Image Previews */
+        .image-previews {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .image-preview {
+            position: relative;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .image-preview .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        /* Scan Button */
+        .scan-button {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .scan-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(17, 153, 142, 0.4);
+        }
+
+        .scan-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        /* Stats */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Menu Display */
+        .category-section {
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-header .count {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+
+        .add-item-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .add-item-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .category-items {
+            padding: 15px;
+        }
+
+        .menu-item {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: all 0.2s;
+        }
+
+        .menu-item:hover {
+            background: #f0f0f0;
+            transform: translateX(5px);
+        }
+
+        .menu-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .item-info h4 {
+            color: #333;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-info .description {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .item-prices {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .price-tag {
+            background: #e8f5e9;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .price-tag.promo {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .price-tag .original {
+            text-decoration: line-through;
+            opacity: 0.6;
+            margin-right: 5px;
+        }
+
+        .promo-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .item-actions button {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .item-actions .edit-btn {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .item-actions .delete-btn {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .item-actions button:hover {
+            transform: scale(1.1);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .prices-section {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .price-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: end;
+        }
+
+        .price-row input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .price-row button {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .add-price-btn {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .modal-footer button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background: #2e7d32;
+        }
+
+        .toast.error {
+            background: #c62828;
+        }
+
+        .toast.active {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 4em;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .price-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .menu-item {
+                flex-direction: column;
+            }
+
+            .item-actions {
+                margin-top: 15px;
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Page -->
+    <div class="login-container" id="loginPage">
+        <div class="login-box">
+            <h1><i class="fas fa-utensils"></i> VocalBoxMaître</h1>
+            <p class="subtitle">Numérisation intelligente de vos menus</p>
+            
+            <div class="login-error" id="loginError">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="loginErrorText">Code invalide</span>
+            </div>
+
+            <input type="text" id="loginInput" placeholder="Login (ex: REST-001)" autocomplete="off">
+            <input type="password" id="passwordInput" placeholder="Mot de passe" autocomplete="off">
+            <button onclick="login()">
+                <i class="fas fa-sign-in-alt"></i> Accéder à mon espace
+            </button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app-container" id="appContainer">
+        
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-camera"></i> VocalBoxMaître</h1>
+                <span class="restaurant-name" id="restaurantName">Restaurant</span>
+            </div>
+            <div class="header-actions">
+                <button onclick="exportMenu()">
+                    <i class="fas fa-download"></i> Exporter
+                </button>
+                <button onclick="saveToDatabase()">
+                    <i class="fas fa-save"></i> Sauvegarder
+                </button>
+                <button onclick="resetAll()" class="danger">
+                    <i class="fas fa-redo"></i> RAZ
+                </button>
+                <button onclick="logout()" class="danger">
+                    <i class="fas fa-sign-out-alt"></i> Quitter
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="upload" onclick="switchTab('upload')">
+                <i class="fas fa-upload"></i> Upload
+            </div>
+            <div class="tab" data-tab="menu" onclick="switchTab('menu')">
+                <i class="fas fa-list"></i> Menu
+                <span class="badge" id="menuBadge">0</span>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            
+            <!-- Upload Tab -->
+            <div class="tab-content active" id="uploadTab">
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Déposez vos photos de menu ici</h3>
+                    <p>ou cliquez pour sélectionner (JPG, PNG)</p>
+                </div>
+                <input type="file" id="fileInput" multiple accept="image/*" style="display: none" onchange="handleFiles(this.files)">
+
+                <div class="image-previews" id="imagePreviews"></div>
+
+                <button class="scan-button" id="scanButton" onclick="scanMenus()" disabled>
+                    <i class="fas fa-magic"></i> Scanner les menus
+                </button>
+            </div>
+
+            <!-- Menu Tab -->
+            <div class="tab-content" id="menuTab">
+                <div class="stats-bar" id="statsBar">
+                    <div class="stat-card">
+                        <div class="number" id="statPlats">0</div>
+                        <div class="label">Plats</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="statCategories">0</div>
+                        <div class="label">Catégories</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="statPromos">0</div>
+                        <div class="label">Promos</div>
+                    </div>
+                </div>
+
+                <div id="menuContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-utensils"></i>
+                        <h3>Aucun menu scanné</h3>
+                        <p>Uploadez des photos de menu dans l'onglet Upload</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Analyse des menus en cours...</div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> <span id="modalTitle">Modifier le plat</span></h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Catégorie *</label>
+                    <select id="editCategory"></select>
+                </div>
+                <div class="form-group">
+                    <label>Nom du plat *</label>
+                    <input type="text" id="editName" placeholder="Ex: Pizza Margherita">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="editDescription" rows="2" placeholder="Ex: Tomate, mozzarella, basilic"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Prix</label>
+                    <div class="prices-section" id="pricesSection">
+                        <!-- Prix dynamiques -->
+                    </div>
+                    <button class="add-price-btn" onclick="addPriceRow()">
+                        <i class="fas fa-plus"></i> Ajouter un prix
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+                <button class="btn-save" onclick="saveItem()">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastText">Opération réussie</span>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const API_BASE = '/api/menu-scan';
+        const AUTH_BASE = '/api/auth';
+        
+        // ============================================
+        // STATE
+        // ============================================
+        let apiKey = localStorage.getItem('vocalbox_apikey') || '';
+        let restaurantInfo = null;
+        let images = [];
+        let menuData = null;
+        let editingItem = null;
+
+        // ============================================
+        // INIT
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            if (apiKey) {
+                verifyAndLogin(apiKey);
+            }
+            setupDragDrop();
+        });
+
+        // ============================================
+        // AUTH
+        // ============================================
+        async function login() {
+            const login = document.getElementById('loginInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+            if (!login || !password) {
+                showLoginError('Veuillez entrer vos identifiants');
+                return;
+            }
+            await verifyAndLogin(login, password);
+        }
+
+        async function verifyAndLogin(login, password) {
+            try {
+                const response = await fetch(`${AUTH_BASE}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ login, password })
+            });
+                const data = await response.json();
+                
+                if (data.success) {
+                    apiKey = data.user.restaurant.code;
+                    restaurantInfo = data.user.restaurant;
+                    localStorage.setItem('vocalbox_user', JSON.stringify(data.user));
+                    localStorage.setItem('vocalbox_apikey', apiKey);
+                    showApp();
+                } else {
+                    showLoginError(data.error || 'Identifiants incorrects');
+                    localStorage.removeItem('vocalbox_apikey');
+                }
+            } catch (error) {
+                showLoginError('Erreur de connexion au serveur');
+            }
+        }
+
+        function showLoginError(message) {
+            const errorDiv = document.getElementById('loginError');
+            document.getElementById('loginErrorText').textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showApp() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            document.getElementById('restaurantName').textContent = restaurantInfo.nom;
+            
+            // Charger le menu existant
+            loadExistingMenu();
+        }
+
+        function logout() {
+            if (confirm('Voulez-vous vraiment quitter ?')) {
+                localStorage.removeItem('vocalbox_apikey');
+                location.reload();
+            }
+        }
+
+        // ============================================
+        // TABS
+        // ============================================
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+        }
+
+        // ============================================
+        // DRAG & DROP
+        // ============================================
+        function setupDragDrop() {
+            const zone = document.getElementById('uploadZone');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                zone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                zone.addEventListener(eventName, () => zone.classList.add('dragover'));
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                zone.addEventListener(eventName, () => zone.classList.remove('dragover'));
+            });
+
+            zone.addEventListener('drop', (e) => {
+                handleFiles(e.dataTransfer.files);
+            });
+        }
+
+        // ============================================
+        // FILE HANDLING
+        // ============================================
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    images.push({
+                        id: Date.now() + Math.random(),
+                        data: e.target.result,
+                        name: file.name
+                    });
+                    updateImagePreviews();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function updateImagePreviews() {
+            const container = document.getElementById('imagePreviews');
+            container.innerHTML = images.map(img => `
+                <div class="image-preview">
+                    <img src="${img.data}" alt="${img.name}">
+                    <button class="remove-btn" onclick="removeImage('${img.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            document.getElementById('scanButton').disabled = images.length === 0;
+        }
+
+        function removeImage(id) {
+            images = images.filter(img => img.id != id);
+            updateImagePreviews();
+        }
+
+        // ============================================
+        // SCAN
+        // ============================================
+        async function scanMenus() {
+            if (images.length === 0) return;
+
+            showLoading('Analyse des menus avec Claude Vision...');
+
+            try {
+                const response = await fetch(`${API_BASE}/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
+                    body: JSON.stringify({
+                        images: images.map(img => img.data)
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    menuData = result.data;
+                    updateMenuDisplay();
+                    updateStats();
+                    switchTab('menu');
+                    showToast('Menu analysé avec succès !', 'success');
+                } else {
+                    showToast('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Erreur de connexion au serveur', 'error');
+                console.error(error);
+            }
+
+            hideLoading();
+        }
+
+        // ============================================
+        // MENU DISPLAY
+        // ============================================
+        function updateMenuDisplay() {
+            const container = document.getElementById('menuContainer');
+
+            if (!menuData || !menuData.categories || menuData.categories.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-utensils"></i>
+                        <h3>Aucun menu scanné</h3>
+                        <p>Uploadez des photos de menu dans l'onglet Upload</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = menuData.categories.map((cat, catIndex) => `
+                <div class="category-section">
+                    <div class="category-header">
+                        <h3>
+                            <i class="fas fa-folder"></i>
+                            ${cat.name}
+                            <span class="count">${cat.items.length} plats</span>
+                        </h3>
+                        <button class="add-item-btn" onclick="openAddModal('${cat.name}')">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                    </div>
+                    <div class="category-items">
+                        ${cat.items.length === 0 ? '<p style="text-align:center;color:#999;">Aucun plat</p>' : 
+                            cat.items.map((item, itemIndex) => `
+                                <div class="menu-item">
+                                    <div class="item-info">
+                                        <h4>
+                                            ${item.name}
+                                            ${item.prices.some(p => p.promo) ? '<span class="promo-badge">PROMO</span>' : ''}
+                                        </h4>
+                                        ${item.description ? `<p class="description">${item.description}</p>` : ''}
+                                        <div class="item-prices">
+                                            ${item.prices.map(price => `
+                                                <span class="price-tag ${price.promo ? 'promo' : ''}">
+                                                    ${price.label !== 'Prix unique' ? price.label + ': ' : ''}
+                                                    ${price.promo ? `<span class="original">${price.originalPrice}€</span> -${price.promo}% ` : ''}
+                                                    ${price.value}€
+                                                </span>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                    <div class="item-actions">
+                                        <button class="edit-btn" onclick="openEditModal(${catIndex}, ${itemIndex})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="delete-btn" onclick="deleteItem(${catIndex}, ${itemIndex})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('menuBadge').textContent = menuData.stats?.totalItems || 0;
+        }
+
+        function updateStats() {
+            if (!menuData) return;
+
+            let totalPlats = 0;
+            let totalPromos = 0;
+
+            menuData.categories.forEach(cat => {
+                totalPlats += cat.items.length;
+                cat.items.forEach(item => {
+                    if (item.prices.some(p => p.promo)) totalPromos++;
+                });
+            });
+
+            document.getElementById('statPlats').textContent = totalPlats;
+            document.getElementById('statCategories').textContent = menuData.categories.length;
+            document.getElementById('statPromos').textContent = totalPromos;
+            document.getElementById('menuBadge').textContent = totalPlats;
+
+            if (menuData.stats) {
+                menuData.stats.totalItems = totalPlats;
+                menuData.stats.totalCategories = menuData.categories.length;
+            }
+        }
+
+        // ============================================
+        // EDIT MODAL
+        // ============================================
+        function openEditModal(catIndex, itemIndex) {
+            editingItem = { catIndex, itemIndex };
+            const item = menuData.categories[catIndex].items[itemIndex];
+            
+            document.getElementById('modalTitle').textContent = 'Modifier le plat';
+            
+            // Populate categories dropdown
+            const catSelect = document.getElementById('editCategory');
+            catSelect.innerHTML = menuData.categories.map(c => 
+                `<option value="${c.name}" ${c.name === menuData.categories[catIndex].name ? 'selected' : ''}>${c.name}</option>`
+            ).join('');
+            
+            document.getElementById('editName').value = item.name;
+            document.getElementById('editDescription').value = item.description || '';
+            
+            // Populate prices
+            const pricesSection = document.getElementById('pricesSection');
+            pricesSection.innerHTML = item.prices.map((p, i) => createPriceRowHTML(i, p)).join('');
+            
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function openAddModal(categoryName) {
+            editingItem = null;
+            
+            document.getElementById('modalTitle').textContent = 'Ajouter un plat';
+            
+            const catSelect = document.getElementById('editCategory');
+            catSelect.innerHTML = menuData.categories.map(c => 
+                `<option value="${c.name}" ${c.name === categoryName ? 'selected' : ''}>${c.name}</option>`
+            ).join('');
+            
+            document.getElementById('editName').value = '';
+            document.getElementById('editDescription').value = '';
+            
+            const pricesSection = document.getElementById('pricesSection');
+            pricesSection.innerHTML = createPriceRowHTML(0, { label: 'Prix unique', value: '' });
+            
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function createPriceRowHTML(index, price = {}) {
+            return `
+                <div class="price-row" data-index="${index}">
+                    <input type="text" placeholder="Format" value="${price.label || ''}" class="price-label">
+                    <input type="number" step="0.01" placeholder="Prix €" value="${price.value || ''}" class="price-value">
+                    <input type="number" placeholder="% Promo" value="${price.promo || ''}" class="price-promo">
+                    <button type="button" onclick="removePriceRow(this)" style="background:#ffebee;color:#c62828;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+        }
+
+        function addPriceRow() {
+            const section = document.getElementById('pricesSection');
+            const index = section.children.length;
+            section.insertAdjacentHTML('beforeend', createPriceRowHTML(index));
+        }
+
+        function removePriceRow(btn) {
+            const section = document.getElementById('pricesSection');
+            if (section.children.length > 1) {
+                btn.closest('.price-row').remove();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            editingItem = null;
+        }
+
+        function saveItem() {
+            const category = document.getElementById('editCategory').value;
+            const name = document.getElementById('editName').value.trim();
+            const description = document.getElementById('editDescription').value.trim();
+            
+            if (!name) {
+                showToast('Le nom du plat est obligatoire', 'error');
+                return;
+            }
+
+            // Collect prices
+            const prices = [];
+            document.querySelectorAll('#pricesSection .price-row').forEach(row => {
+                const label = row.querySelector('.price-label').value || 'Prix unique';
+                const value = row.querySelector('.price-value').value;
+                const promo = row.querySelector('.price-promo').value;
+                
+                if (value) {
+                    const originalValue = parseFloat(value);
+                    const promoPercent = promo ? parseInt(promo) : null;
+                    let finalValue = originalValue;
+                    if (promoPercent) {
+                        finalValue = originalValue * (1 - promoPercent / 100);
+                        finalValue = Math.round(finalValue * 100) / 100;
+                    }
+                    prices.push({
+                        label,
+                        value: finalValue,
+                        originalPrice: promoPercent ? originalValue : null,
+                        promo: promoPercent
+                    });
+                }
+            });
+
+            if (prices.length === 0) {
+                showToast('Au moins un prix est requis', 'error');
+                return;
+            }
+
+            const newItem = { name, description: description || null, prices };
+
+            if (editingItem) {
+                // Update existing
+                const oldCatIndex = editingItem.catIndex;
+                const oldCat = menuData.categories[oldCatIndex];
+                
+                if (oldCat.name === category) {
+                    oldCat.items[editingItem.itemIndex] = newItem;
+                } else {
+                    // Move to different category
+                    oldCat.items.splice(editingItem.itemIndex, 1);
+                    const targetCat = menuData.categories.find(c => c.name === category);
+                    if (targetCat) {
+                        targetCat.items.push(newItem);
+                    }
+                }
+            } else {
+                // Add new
+                const targetCat = menuData.categories.find(c => c.name === category);
+                if (targetCat) {
+                    targetCat.items.push(newItem);
+                }
+            }
+
+            updateMenuDisplay();
+            updateStats();
+            closeModal();
+            showToast('Plat enregistré !', 'success');
+        }
+
+        function deleteItem(catIndex, itemIndex) {
+            if (!confirm('Supprimer ce plat ?')) return;
+            
+            menuData.categories[catIndex].items.splice(itemIndex, 1);
+            
+            // Remove empty categories
+            if (menuData.categories[catIndex].items.length === 0) {
+                menuData.categories.splice(catIndex, 1);
+            }
+            
+            updateMenuDisplay();
+            updateStats();
+            showToast('Plat supprimé', 'success');
+        }
+
+        // ============================================
+        // SAVE & EXPORT
+        // ============================================
+        async function saveToDatabase() {
+            if (!menuData) {
+                showToast('Aucun menu à sauvegarder', 'error');
+                return;
+            }
+
+            showLoading('Sauvegarde en cours...');
+
+            try {
+                const response = await fetch(`${API_BASE}/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
+                    body: JSON.stringify({ menuData })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Menu sauvegardé en base de données !', 'success');
+                } else {
+                    showToast('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Erreur de connexion', 'error');
+            }
+
+            hideLoading();
+        }
+
+        function exportMenu() {
+            if (!menuData) {
+                showToast('Aucun menu à exporter', 'error');
+                return;
+            }
+
+            const dataStr = JSON.stringify(menuData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `menu_${restaurantInfo.nom.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast('Menu exporté !', 'success');
+        }
+
+        async function loadExistingMenu() {
+            try {
+                const response = await fetch(`${API_BASE}/menu`, {
+                    headers: { 'X-API-Key': apiKey }
+                });
+                const result = await response.json();
+                
+                if (result.success && result.data.categories.length > 0) {
+                    menuData = result.data;
+                    updateMenuDisplay();
+                    updateStats();
+                }
+            } catch (error) {
+                console.log('Pas de menu existant');
+            }
+        }
+
+        function resetAll() {
+            if (!confirm('Effacer toutes les données ? Cette action est irréversible.')) return;
+            
+            images = [];
+            menuData = null;
+            updateImagePreviews();
+            updateMenuDisplay();
+            document.getElementById('statPlats').textContent = '0';
+            document.getElementById('statCategories').textContent = '0';
+            document.getElementById('statPromos').textContent = '0';
+            document.getElementById('menuBadge').textContent = '0';
+            switchTab('upload');
+            showToast('Données effacées', 'success');
+        }
+
+        // ============================================
+        // UI HELPERS
+        // ============================================
+        function showLoading(text) {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastText').textContent = message;
+            toast.className = `toast ${type} active`;
+            
+            setTimeout(() => {
+                toast.classList.remove('active');
+
+    <script>
+        // Fonction pour ouvrir la modal de changement d'identifiants
+        function openChangeCredentials() {
+            const user = JSON.parse(localStorage.getItem('vocalbox_user') || '{}');
+            
+            const html = `
+                <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;" id="changeCredentialsModal">
+                    <div style="background:white;border-radius:20px;max-width:500px;width:90%;padding:30px;">
+                        <h2 style="color:#667eea;margin-bottom:20px;">🔒 Changer mes identifiants</h2>
+                        
+                        <div style="margin-bottom:15px;">
+                            <label style="display:block;font-weight:bold;margin-bottom:5px;">Mot de passe actuel *</label>
+                            <input type="password" id="currentPassword" style="width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;">
+                        </div>
+                        
+                        <div style="margin-bottom:15px;">
+                            <label style="display:block;font-weight:bold;margin-bottom:5px;">Nouveau login (optionnel)</label>
+                            <input type="text" id="newLogin" placeholder="${user.login || ''}" style="width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;">
+                        </div>
+                        
+                        <div style="margin-bottom:20px;">
+                            <label style="display:block;font-weight:bold;margin-bottom:5px;">Nouveau mot de passe (optionnel)</label>
+                            <input type="password" id="newPassword" style="width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;">
+                        </div>
+                        
+                        <div style="display:flex;gap:10px;">
+                            <button onclick="closeChangeCredentials()" style="flex:1;padding:12px;background:#e0e0e0;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">Annuler</button>
+                            <button onclick="saveCredentials()" style="flex:1;padding:12px;background:linear-gradient(135deg, #11998e 0%, #38ef7d 100%);color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">Enregistrer</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+        
+        function closeChangeCredentials() {
+            document.getElementById('changeCredentialsModal')?.remove();
+        }
+        
+        async function saveCredentials() {
+            const user = JSON.parse(localStorage.getItem('vocalbox_user') || '{}');
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newLogin = document.getElementById('newLogin').value.trim();
+            const newPassword = document.getElementById('newPassword').value.trim();
+            
+            if (!currentPassword) {
+                alert('Mot de passe actuel requis');
+                return;
+            }
+            
+            if (!newLogin && !newPassword) {
+                alert('Veuillez entrer au moins un nouveau login ou mot de passe');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${AUTH_BASE}/change-credentials`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        currentPassword,
+                        newLogin: newLogin || undefined,
+                        newPassword: newPassword || undefined
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Identifiants modifiés avec succès ! Reconnectez-vous.', 'success');
+                    setTimeout(() => {
+                        logout();
+                    }, 2000);
+                } else {
+                    alert('Erreur: ' + result.error);
+                }
+            } catch (error) {
+                alert('Erreur de connexion');
+            }
+        }
+    </script>
+            }, 3000);
+        }
+
+        // Enter key to login
+        document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+    </script>
+</body>
+</html>

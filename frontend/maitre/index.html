@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VocalBoxMaître - Numérisation de Menus</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Login Page */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .login-box h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .login-box .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .login-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-error {
+            background: #fee;
+            color: #c00;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Styles supprimés pour la brièveté - fichier trop long */
+        /* Voir le fichier complet sur le serveur */
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div class="login-container" id="loginPage">
+        <div class="login-box">
+            <h1><i class="fas fa-utensils"></i> VocalBoxMaître</h1>
+            <p class="subtitle">Numérisation intelligente de vos menus</p>
+
+            <div class="login-error" id="loginError">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="loginErrorText">Code invalide</span>
+            </div>
+
+            <input type="text" id="loginInput" placeholder="Login (ex: REST-001)" autocomplete="off">
+            <input type="password" id="passwordInput" placeholder="Mot de passe" autocomplete="off">
+            <button onclick="login()">
+                <i class="fas fa-sign-in-alt"></i> Accéder à mon espace
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/menu-scan';
+        const AUTH_BASE = '/api/auth';
+
+        let apiKey = localStorage.getItem('vocalbox_apikey') || '';
+        let restaurantInfo = null;
+
+        async function login() {
+            const login = document.getElementById('loginInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+            if (!login || !password) {
+                showLoginError('Veuillez entrer vos identifiants');
+                return;
+            }
+            await verifyAndLogin(login, password);
+        }
+
+        async function verifyAndLogin(login, password) {
+            try {
+                const response = await fetch(`${AUTH_BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ login, password })
+                });
+                const data = await response.json();
+
+                // ⚠️ LIGNE IMPORTANTE MODIFIÉE
+                if (data.success) {
+                    apiKey = data.user.restaurant.code;
+                    restaurantInfo = data.user.restaurant;
+                    localStorage.setItem('vocalbox_user', JSON.stringify(data.user));
+                    localStorage.setItem('vocalbox_apikey', apiKey);
+                    showApp();
+                } else {
+                    showLoginError(data.error || 'Identifiants incorrects');
+                    localStorage.removeItem('vocalbox_apikey');
+                }
+            } catch (error) {
+                showLoginError('Erreur de connexion au serveur');
+            }
+        }
+
+        function showLoginError(message) {
+            const errorDiv = document.getElementById('loginError');
+            document.getElementById('loginErrorText').textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showApp() {
+            alert('Connexion réussie ! Restaurant: ' + restaurantInfo.nom);
+        }
+    </script>
+</body>
+</html>
