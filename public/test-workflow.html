@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VokalBox - Test Workflow Complet</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .required {
+            color: #ff6b6b;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f9f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            background: #f0f0ff;
+            border-color: #764ba2;
+        }
+
+        .upload-zone i {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-zone h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .image-previews {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .image-preview {
+            position: relative;
+            background: #f5f5f5;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .image-preview .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        /* Results */
+        .results {
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .result-section {
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .result-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-item {
+            background: white;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-header {
+            background: #667eea;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-item {
+            background: white;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 3px solid #11998e;
+        }
+
+        .menu-item .name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .menu-item .description {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .menu-item .price {
+            color: #11998e;
+            font-weight: bold;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: none;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background: #2e7d32;
+        }
+
+        .toast.error {
+            background: #c62828;
+        }
+
+        .toast.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-flask"></i> VokalBox - Test Workflow Complet</h1>
+
+        <!-- Formulaire Restaurant -->
+        <div class="card">
+            <h2><i class="fas fa-utensils"></i> Informations Restaurant</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nom du restaurant <span class="required">*</span></label>
+                    <input type="text" id="nomRestaurant" placeholder="Ex: Pizzeria Bella Vita">
+                </div>
+                <div class="form-group">
+                    <label>Téléphone <span class="required">*</span></label>
+                    <input type="tel" id="telephone" placeholder="Ex: +33 4 93 99 99 99">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="contact@restaurant.fr">
+                </div>
+                <div class="form-group">
+                    <label>Nom du commercial</label>
+                    <input type="text" id="nomCommercial" placeholder="Ex: Jean Dupont">
+                </div>
+                <div class="form-group full">
+                    <label>Adresse complète</label>
+                    <input type="text" id="adresse" placeholder="15 rue Victor Hugo, 06400 Cannes">
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Photos -->
+        <div class="card">
+            <h2><i class="fas fa-camera"></i> Photos du Menu <span class="required">*</span></h2>
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>Déposez vos photos de menu ici</h3>
+                <p>ou cliquez pour sélectionner (JPG, PNG)</p>
+            </div>
+            <input type="file" id="fileInput" multiple accept="image/*" style="display: none">
+            <div class="image-previews" id="imagePreviews"></div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="button-group">
+            <button class="btn btn-primary" id="validateBtn" onclick="validateAndCreate()" disabled>
+                <i class="fas fa-check-circle"></i> Valider et Créer
+            </button>
+            <button class="btn btn-danger" onclick="resetAll()">
+                <i class="fas fa-redo"></i> RAZ - Tout Effacer
+            </button>
+        </div>
+
+        <!-- Results -->
+        <div class="card results" id="results">
+            <h2><i class="fas fa-check-circle"></i> Résultats du Test</h2>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Traitement en cours...</div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span id="toastText">Message</span>
+    </div>
+
+    <script>
+        let images = [];
+
+        // Setup drag & drop
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, () => uploadZone.classList.add('dragover'));
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, () => uploadZone.classList.remove('dragover'));
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    images.push({
+                        id: Date.now() + Math.random(),
+                        data: e.target.result,
+                        name: file.name
+                    });
+                    updateImagePreviews();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function updateImagePreviews() {
+            const container = document.getElementById('imagePreviews');
+            container.innerHTML = images.map(img => `
+                <div class="image-preview">
+                    <img src="${img.data}" alt="${img.name}">
+                    <button class="remove-btn" onclick="removeImage('${img.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            checkFormValid();
+        }
+
+        function removeImage(id) {
+            images = images.filter(img => img.id != id);
+            updateImagePreviews();
+        }
+
+        function checkFormValid() {
+            const nom = document.getElementById('nomRestaurant').value.trim();
+            const tel = document.getElementById('telephone').value.trim();
+            const hasImages = images.length > 0;
+            
+            document.getElementById('validateBtn').disabled = !(nom && tel && hasImages);
+        }
+
+        document.getElementById('nomRestaurant').addEventListener('input', checkFormValid);
+        document.getElementById('telephone').addEventListener('input', checkFormValid);
+
+        async function validateAndCreate() {
+            const nom = document.getElementById('nomRestaurant').value.trim();
+            const tel = document.getElementById('telephone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const adresse = document.getElementById('adresse').value.trim();
+            const commercial = document.getElementById('nomCommercial').value.trim();
+
+            if (!nom || !tel || images.length === 0) {
+                showToast('Veuillez remplir tous les champs obligatoires', 'error');
+                return;
+            }
+
+            showLoading('Création du restaurant et numérisation du menu...');
+
+            try {
+                const response = await fetch('/api/test-workflow/create-complete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nom_restaurant: nom,
+                        telephone_resto: tel,
+                        email: email || null,
+                        adresse_complete: adresse || null,
+                        nom_commercial: commercial || null,
+                        images: images.map(img => img.data)
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayResults(result.data);
+                    showToast('Restaurant créé avec succès !', 'success');
+                } else {
+                    showToast('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Erreur de connexion au serveur', 'error');
+            }
+
+            hideLoading();
+        }
+
+        function displayResults(data) {
+            const container = document.getElementById('resultsContent');
+            
+            let html = `
+                <div class="result-section">
+                    <h3><i class="fas fa-building"></i> Restaurant Créé</h3>
+                    <div class="result-item">
+                        <span><strong>Nom:</strong> ${data.restaurant.nom}</span>
+                    </div>
+                    <div class="result-item">
+                        <span><strong>Code:</strong> ${data.restaurant.code}</span>
+                        <span style="background:#e8f5e9;padding:5px 10px;border-radius:5px;color:#2e7d32;">TEST</span>
+                    </div>
+                    <div class="result-item">
+                        <span><strong>Téléphone:</strong> ${data.restaurant.telephone}</span>
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <h3><i class="fas fa-chart-bar"></i> Statistiques Menu</h3>
+                    <div class="result-item">
+                        <span><strong>Catégories:</strong></span>
+                        <span style="font-size:1.5em;color:#667eea;font-weight:bold;">${data.menu.categories}</span>
+                    </div>
+                    <div class="result-item">
+                        <span><strong>Plats extraits:</strong></span>
+                        <span style="font-size:1.5em;color:#11998e;font-weight:bold;">${data.menu.total_items}</span>
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <h3><i class="fas fa-utensils"></i> Menu Numérisé</h3>
+            `;
+
+            data.menu.details.categories.forEach(cat => {
+                html += `
+                    <div class="category-header">
+                        <span><i class="fas fa-folder"></i> ${cat.name}</span>
+                        <span>${cat.items.length} plats</span>
+                    </div>
+                `;
+                
+                cat.items.forEach(item => {
+                    html += `
+                        <div class="menu-item">
+                            <div class="name">${item.name}</div>
+                            ${item.description ? `<div class="description">${item.description}</div>` : ''}
+                            <div class="price">
+                                ${item.prices.map(p => `${p.label}: ${p.value}€`).join(' | ')}
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            html += '</div>';
+
+            container.innerHTML = html;
+            document.getElementById('results').classList.add('active');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function resetAll() {
+            if (!confirm('⚠️ Effacer TOUS les restaurants de test et recommencer ?')) return;
+
+            showLoading('Nettoyage de la base de données...');
+
+            try {
+                const response = await fetch('/api/test-workflow/reset-all', {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Reset form
+                    document.getElementById('nomRestaurant').value = '';
+                    document.getElementById('telephone').value = '';
+                    document.getElementById('email').value = '';
+                    document.getElementById('adresse').value = '';
+                    document.getElementById('nomCommercial').value = '';
+                    images = [];
+                    updateImagePreviews();
+                    document.getElementById('results').classList.remove('active');
+                    
+                    showToast(result.message, 'success');
+                } else {
+                    showToast('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Erreur de connexion', 'error');
+            }
+
+            hideLoading();
+        }
+
+        function showLoading(text) {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastText').textContent = message;
+            toast.className = `toast ${type} active`;
+            
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

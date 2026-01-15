@@ -1,0 +1,251 @@
+/**
+ * VOCALBOX - API CENTRALE
+ * Serveur Node.js avec Express
+ * Briques 1 & 2 intégrées
+ */
+
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const mysql = require('mysql2/promise');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ========================================
+// MIDDLEWARES
+// ========================================
+
+// CORS
+const corsOptions = {
+    origin: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : '*',
+    credentials: true
+};
+app.use(cors(corsOptions));
+
+// Parser JSON
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Servir les fichiers statiques
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Logging des requêtes
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    next();
+});
+
+// ========================================
+// POOL DE CONNEXIONS MYSQL
+// ========================================
+
+const pool = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
+
+// Test de connexion au démarrage
+pool.getConnection()
+    .then(connection => {
+        console.log('✅ Connexion à MySQL établie');
+        connection.release();
+    })
+    .catch(err => {
+        console.error('❌ Erreur connexion MySQL:', err.message);
+    });
+
+// Middleware pour attacher le pool aux requêtes
+app.use((req, res, next) => {
+    req.db = pool;
+    next();
+});
+// ========================================
+// ROUTES PRINCIPALES
+// ========================================
+
+/**
+ * Health check
+ */
+app.get('/health', (req, res) => {
+    res.json({
+        success: true,
+        message: 'API VocalBox opérationnelle',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development'
+    });
+});
+
+/**
+ * Health check base de données
+ */
+app.get('/health/db', async (req, res) => {
+    try {
+        const [rows] = await pool.execute('SELECT 1 as test');
+        res.json({
+            success: true,
+            message: 'Base de données opérationnelle',
+            data: rows[0]
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Erreur de connexion à la base de données',
+            error: error.message
+        });
+    }
+});
+
+// ========================================
+// ROUTES BRIQUE 1 : VocalBoxMaître
+// ========================================
+
+const menuScanRoutes = require('./routes/menu-scan');
+app.use('/api/menu-scan', menuScanRoutes);
+
+// ========================================
+// ROUTES BRIQUE 2 : VocalBoxClient (API Centrale)
+// ========================================
+
+const ordersRoutes = require('./routes/orders');
+const voiceRoutes = require('./routes/voice');
+const voiceMenuIntegrationRoutes = require('./routes/voice-menu-integration');
+const restaurantsRoutes = require('./routes/restaurants');
+const adminRoutes = require('./routes/admin');
+const authRoutes = require('./routes/auth');
+const reservationsRoutes = require('./routes/reservations');
+const testWorkflowRoutes = require('./routes/test-workflow');
+const commandesRoutes = require('./routes/commandes');
+
+app.use('/api/v1/orders', ordersRoutes);
+app.use('/api/v1/voice', voiceRoutes);
+app.use('/api/voice', voiceMenuIntegrationRoutes);
+app.use('/api/v1/restaurants', restaurantsRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/reservations', reservationsRoutes);
+app.use('/api/commandes', commandesRoutes);
+app.use('/api/test-workflow', testWorkflowRoutes);
+
+// ========================================
+// ROUTES BRIQUE 3 : VokalBox-Inscription
+// ========================================
+
+const inscriptionRoutes = require('./routes/inscription');
+app.use('/api/inscription', inscriptionRoutes);
+
+// ========================================
+// ROUTE POUR SERVIR VOCALBOXMAÎTRE
+// ========================================
+
+app.get('/maitre', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'maitre', 'index.html'));
+});
+
+app.get('/maitre/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'maitre', 'index.html'));
+});
+
+// ========================================
+// GESTION DES ERREURS 404
+// ========================================
+
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: 'Route non trouvée',
+        path: req.path
+    });
+});
+
+// ========================================
+// GESTION DES ERREURS GLOBALES
+// ========================================
+
+app.use((err, req, res, next) => {
+    console.error('Erreur serveur:', err);
+    res.status(500).json({
+        success: false,
+        message: 'Erreur interne du serveur',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+});
+
+// ========================================
+// DÉMARRAGE DU SERVEUR
+// ========================================
+
+app.listen(PORT, "127.0.0.1", () => {
+    console.log('');
+    console.log('╔══════════════════════════════════════════════════╗');
+    console.log('║         VOCALBOX API - SERVEUR DÉMARRÉ          ║');
+    console.log('╚══════════════════════════════════════════════════╝');
+    console.log('');
+    console.log(`🚀 Serveur en écoute sur le port ${PORT}`);
+    console.log(`🌍 Environnement: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📡 URL locale: http://localhost:${PORT}`);
+    console.log('');
+    console.log('📋 Routes disponibles:');
+    console.log('  • GET  /health                          - Health check API');
+    console.log('  • GET  /health/db                       - Health check DB');
+    console.log('');
+    console.log('🎨 BRIQUE 1 - VocalBoxMaître:');
+    console.log('  • GET  /maitre/                         - Interface de numérisation');
+    console.log('  • GET  /api/menu-scan/verify/:apiKey    - Vérifier code restaurant');
+    console.log('  • POST /api/menu-scan/analyze           - Scanner images');
+    console.log('  • POST /api/menu-scan/save              - Sauvegarder menu');
+    console.log('  • GET  /api/menu-scan/menu              - Récupérer menu');
+    console.log('');
+    console.log('🎯 BRIQUE 2 - VocalBoxClient (API Centrale):');
+    console.log('  📦 Commandes:');
+    console.log('  • POST   /api/v1/orders                 - Créer commande');
+    console.log('  • GET    /api/v1/orders/:restaurantId   - Liste commandes');
+    console.log('  • GET    /api/v1/orders/detail/:orderId - Détails commande');
+    console.log('  • PATCH  /api/v1/orders/:id/status      - Changer statut');
+    console.log('  • DELETE /api/v1/orders/:id             - Annuler commande');
+    console.log('  • GET    /api/v1/stats/:restaurantId    - Statistiques');
+    console.log('');
+    console.log('  📞 Voice (Telnyx):');
+    console.log('  • POST /api/v1/voice/dynamic-vars       - Webhook Dynamic Variables');
+    console.log('  • GET  /api/v1/voice/menu/:apiKey       - Menu pour vocal');
+    console.log('  • POST /api/v1/voice/order              - Commande vocale');
+    console.log('  • POST /api/v1/voice/confirm-sms        - SMS confirmation');
+    console.log('  • GET  /api/v1/voice/test-dynamic-vars/:id - Test Dynamic Vars');
+    console.log('');
+    console.log('  📅 Réservations (AI Assistant):');
+    console.log('  • POST   /api/reservations/check        - Vérifier disponibilité');
+    console.log('  • POST   /api/reservations/create       - Créer réservation');
+    console.log('  • GET    /api/reservations/list/:id     - Liste réservations');
+    console.log('  • PATCH  /api/reservations/:id/status   - Changer statut');
+    console.log('  • DELETE /api/reservations/:id          - Annuler réservation');
+    console.log('');
+    console.log('  🏢 Restaurants:');
+    console.log('  • GET    /api/v1/restaurants            - Liste restaurants');
+    console.log('  • GET    /api/v1/restaurants/:key/info  - Infos restaurant');
+    console.log('  • POST   /api/v1/restaurants            - Créer restaurant');
+    console.log('  • PUT    /api/v1/restaurants/:id        - Modifier restaurant');
+    console.log('  • DELETE /api/v1/restaurants/:id        - Supprimer restaurant');
+    console.log('');
+    console.log('╚══════════════════════════════════════════════════╝');
+    console.log('');
+});
+
+// Gestion propre de l'arrêt
+process.on('SIGTERM', () => {
+    console.log('SIGTERM reçu, fermeture du serveur...');
+    pool.end();
+    process.exit(0);
+});
+
+process.on('SIGINT', () => {
+    console.log('SIGINT reçu, fermeture du serveur...');
+    pool.end();
+    process.exit(0);
+});

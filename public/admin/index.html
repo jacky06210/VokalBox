@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VokalBox Admin - Gestion Restaurants</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Login */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-box h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .login-error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        /* Admin Panel */
+        .admin-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header button {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-card .label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .actions-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1em;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .restaurants-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tbody tr:hover {
+            background: #f8f8f8;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .badge.actif {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge.inactif {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .badge.essai {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .code-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-edit {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .btn-delete {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .btn-stats {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-header h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group label .required {
+            color: #c62828;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: #e0e0e0;
+            color: #666;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .toast.success { background: #2e7d32; }
+        .toast.error { background: #c62828; }
+        .toast.active { display: flex; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 4em;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login -->
+    <div class="login-container" id="loginPage">
+        <div class="login-box">
+            <h1><i class="fas fa-shield-alt"></i> Admin VokalBox</h1>
+            <div class="login-error" id="loginError">Identifiants incorrects</div>
+            <input type="text" id="loginInput" placeholder="Login admin" style="margin-bottom:15px;">
+            <input type="password" id="passwordInput" placeholder="Mot de passe admin">
+            <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Se connecter</button>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-container" id="adminPanel">
+        
+        <div class="header">
+            <h1><i class="fas fa-cog"></i> Administration VokalBox</h1>
+            <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+        </div>
+
+        <div class="content">
+            
+            <!-- Stats -->
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="number" id="statTotal">0</div>
+                    <div class="label">Restaurants Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="statActifs">0</div>
+                    <div class="label">Actifs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="statEssais">0</div>
+                    <div class="label">En essai</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="statPlats">0</div>
+                    <div class="label">Plats total</div>
+                </div>
+            </div>
+
+            <!-- Actions Bar -->
+            <div class="actions-bar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Rechercher un restaurant..." onkeyup="filterRestaurants()">
+                </div>
+                <button class="btn-primary" onclick="openCreateModal()">
+                    <i class="fas fa-plus"></i> Nouveau restaurant
+                </button>
+            </div>
+
+            <!-- Restaurants Table -->
+            <div class="restaurants-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Restaurant</th>
+                            <th>Ville</th>
+                            <th>Téléphone</th>
+                            <th>Email</th>
+                            <th>Statut</th>
+                            <th>Plats</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="restaurantsTableBody">
+                        <tr>
+                            <td colspan="8">
+                                <div class="loading">
+                                    <div class="spinner"></div>
+                                    <p>Chargement...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal Create/Edit -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> <span id="modalTitle">Nouveau restaurant</span></h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-info-circle"></i> Informations de base</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Code Restaurant <span class="required">*</span></label>
+                            <input type="text" id="editCode" placeholder="REST-001" readonly>
+                            <small style="color:#666;">Généré automatiquement</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Nom du restaurant <span class="required">*</span></label>
+                            <input type="text" id="editNom" placeholder="Ex: Chez Mario">
+                        </div>
+                        <div class="form-group">
+                            <label>Email <span class="required">*</span></label>
+                            <input type="email" id="editEmail" placeholder="contact@restaurant.fr">
+                        </div>
+                        <div class="form-group">
+                            <label>Téléphone restaurant</label>
+                            <input type="tel" id="editTel" placeholder="+33 4 93 99 99 99">
+                        </div>
+                        <div class="form-group">
+                            <label>Numéro Telnyx <span class="required">*</span></label>
+                            <input type="tel" id="editTelnyx" placeholder="+33423330767">
+                        </div>
+                        <div class="form-group">
+                            <label>Site web</label>
+                            <input type="url" id="editSite" placeholder="https://restaurant.fr">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> Adresse</h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Rue</label>
+                            <input type="text" id="editRue" placeholder="15 avenue Victor Hugo">
+                        </div>
+                        <div class="form-group">
+                            <label>Code postal</label>
+                            <input type="text" id="editCP" placeholder="06400">
+                        </div>
+                        <div class="form-group">
+                            <label>Ville</label>
+                            <input type="text" id="editVille" placeholder="Cannes">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-clock"></i> Horaires</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Midi - Début</label>
+                            <input type="time" id="editMidiDebut" value="12:00">
+                        </div>
+                        <div class="form-group">
+                            <label>Midi - Fin</label>
+                            <input type="time" id="editMidiFin" value="14:30">
+                        </div>
+                        <div class="form-group">
+                            <label>Soir - Début</label>
+                            <input type="time" id="editSoirDebut" value="19:00">
+                        </div>
+                        <div class="form-group">
+                            <label>Soir - Fin</label>
+                            <input type="time" id="editSoirFin" value="22:30">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Capacité (couverts)</label>
+                            <input type="number" id="editCapacite" value="40" min="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-toggle-on"></i> Statut</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Statut abonnement</label>
+                            <select id="editStatut">
+                                <option value="essai">Essai</option>
+                                <option value="actif">Actif</option>
+                                <option value="inactif">Inactif</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Actif</label>
+                            <select id="editActif">
+                                <option value="1">Oui</option>
+                                <option value="0">Non</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+                <button class="btn-save" onclick="saveRestaurant()">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastText">Opération réussie</span>
+    </div>
+
+    <script>
+        const ADMIN_LOGIN = 'admin';
+        const ADMIN_PASSWORD = 'VocalBoxAdmin2025!';
+        const API_BASE = '/api/admin';
+        
+        let restaurants = [];
+        let editingId = null;
+
+        // ================================
+        // AUTH
+        // ================================
+        function login() {
+            const login = document.getElementById('loginInput').value;
+            const pwd = document.getElementById('passwordInput').value;
+            if (login === ADMIN_LOGIN && pwd === ADMIN_PASSWORD) {
+                localStorage.setItem('vocalbox_admin', 'true');
+                showAdmin();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                localStorage.removeItem('vocalbox_admin');
+                location.reload();
+            }
+        }
+
+        function showAdmin() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            loadRestaurants();
+        }
+
+        // ================================
+        // LOAD DATA
+        // ================================
+        async function loadRestaurants() {
+            try {
+                const response = await fetch(`${API_BASE}/restaurants`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    restaurants = data.restaurants;
+                    displayRestaurants();
+                    updateStats();
+                }
+            } catch (error) {
+                showToast('Erreur de chargement', 'error');
+            }
+        }
+
+        function displayRestaurants() {
+            const tbody = document.getElementById('restaurantsTableBody');
+            
+            if (restaurants.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="8">
+                        <div class="empty-state">
+                            <i class="fas fa-store-slash"></i>
+                            <h3>Aucun restaurant</h3>
+                            <p>Cliquez sur "Nouveau restaurant" pour commencer</p>
+                        </div>
+                    </td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = restaurants.map(r => `
+                <tr data-id="${r.id}">
+                    <td><span class="code-badge">${r.code_restaurant}</span></td>
+                    <td><strong>${r.nom_restaurant}</strong></td>
+                    <td>${r.ville || '-'}</td>
+                    <td>${r.telephone_resto || '-'}</td>
+                    <td>${r.email || '-'}</td>
+                    <td><span class="badge ${r.statut_abonnement}">${r.statut_abonnement}</span></td>
+                    <td><strong>${r.nombre_plats || 0}</strong></td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn-icon btn-edit" onclick="openEditModal(${r.id})" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon btn-delete" onclick="deleteRestaurant(${r.id})" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats() {
+            const total = restaurants.length;
+            const actifs = restaurants.filter(r => r.statut_abonnement === 'actif').length;
+            const essais = restaurants.filter(r => r.statut_abonnement === 'essai').length;
+            const totalPlats = restaurants.reduce((sum, r) => sum + (r.nombre_plats || 0), 0);
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statActifs').textContent = actifs;
+            document.getElementById('statEssais').textContent = essais;
+            document.getElementById('statPlats').textContent = totalPlats;
+        }
+
+        function filterRestaurants() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#restaurantsTableBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        }
+
+        // ================================
+        // MODAL
+        // ================================
+        async function openCreateModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Nouveau restaurant';
+            
+            // Générer un nouveau code
+            const nextCode = await generateNextCode();
+            
+            document.getElementById('editCode').value = nextCode;
+            document.getElementById('editNom').value = '';
+            document.getElementById('editEmail').value = '';
+            document.getElementById('editTel').value = '';
+            document.getElementById('editTelnyx').value = '';
+            document.getElementById('editSite').value = '';
+            document.getElementById('editRue').value = '';
+            document.getElementById('editCP').value = '';
+            document.getElementById('editVille').value = '';
+            document.getElementById('editMidiDebut').value = '12:00';
+            document.getElementById('editMidiFin').value = '14:30';
+            document.getElementById('editSoirDebut').value = '19:00';
+            document.getElementById('editSoirFin').value = '22:30';
+            document.getElementById('editCapacite').value = '40';
+            document.getElementById('editStatut').value = 'essai';
+            document.getElementById('editActif').value = '1';
+            
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        async function openEditModal(id) {
+            editingId = id;
+            document.getElementById('modalTitle').textContent = 'Modifier le restaurant';
+            
+            const resto = restaurants.find(r => r.id === id);
+            if (!resto) return;
+            
+            document.getElementById('editCode').value = resto.code_restaurant;
+            document.getElementById('editNom').value = resto.nom_restaurant;
+            document.getElementById('editEmail').value = resto.email || '';
+            document.getElementById('editTel').value = resto.telephone_resto || '';
+            document.getElementById('editTelnyx').value = resto.telnyx_phone_number;
+            document.getElementById('editSite').value = resto.site_web || '';
+            document.getElementById('editRue').value = resto.adresse_rue || '';
+            document.getElementById('editCP').value = resto.code_postal || '';
+            document.getElementById('editVille').value = resto.ville || '';
+            document.getElementById('editMidiDebut').value = resto.horaires_midi_debut || '12:00';
+            document.getElementById('editMidiFin').value = resto.horaires_midi_fin || '14:30';
+            document.getElementById('editSoirDebut').value = resto.horaires_soir_debut || '19:00';
+            document.getElementById('editSoirFin').value = resto.horaires_soir_fin || '22:30';
+            document.getElementById('editCapacite').value = resto.capacite_couverts || 40;
+            document.getElementById('editStatut').value = resto.statut_abonnement || 'essai';
+            document.getElementById('editActif').value = resto.actif ? '1' : '0';
+            
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            editingId = null;
+        }
+
+        async function generateNextCode() {
+            const response = await fetch(`${API_BASE}/next-code`);
+            const data = await response.json();
+            return data.code;
+        }
+
+        // ================================
+        // SAVE
+        // ================================
+        async function saveRestaurant() {
+            const data = {
+                code_restaurant: document.getElementById('editCode').value,
+                nom_restaurant: document.getElementById('editNom').value,
+                email: document.getElementById('editEmail').value,
+                telephone_resto: document.getElementById('editTel').value,
+                telnyx_phone_number: document.getElementById('editTelnyx').value,
+                site_web: document.getElementById('editSite').value,
+                adresse_rue: document.getElementById('editRue').value,
+                code_postal: document.getElementById('editCP').value,
+                ville: document.getElementById('editVille').value,
+                horaires_midi_debut: document.getElementById('editMidiDebut').value,
+                horaires_midi_fin: document.getElementById('editMidiFin').value,
+                horaires_soir_debut: document.getElementById('editSoirDebut').value,
+                horaires_soir_fin: document.getElementById('editSoirFin').value,
+                capacite_couverts: parseInt(document.getElementById('editCapacite').value),
+                statut_abonnement: document.getElementById('editStatut').value,
+                actif: parseInt(document.getElementById('editActif').value)
+            };
+
+            // Validation
+            if (!data.nom_restaurant || !data.email || !data.telnyx_phone_number) {
+                showToast('Veuillez remplir les champs obligatoires', 'error');
+                return;
+            }
+
+            try {
+                const url = editingId 
+                    ? `${API_BASE}/restaurants/${editingId}` 
+                    : `${API_BASE}/restaurants`;
+                
+                const response = await fetch(url, {
+                    method: editingId ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(editingId ? 'Restaurant modifié !' : 'Restaurant créé !', 'success');
+                    closeModal();
+                    loadRestaurants();
+                } else {
+                    showToast('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Erreur de connexion', 'error');
+            }
+        }
+
+        // ================================
+        // DELETE
+        // ================================
+        async function deleteRestaurant(id) {
+            const resto = restaurants.find(r => r.id === id);
+            if (!confirm(`Supprimer "${resto.nom_restaurant}" ?\n\nCette action est irréversible et supprimera également tous les menus associés.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/restaurants/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Restaurant supprimé', 'success');
+                    loadRestaurants();
+                } else {
+                    showToast('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Erreur de connexion', 'error');
+            }
+        }
+
+        // ================================
+        // TOAST
+        // ================================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastText').textContent = message;
+            toast.className = `toast ${type} active`;
+            setTimeout(() => toast.classList.remove('active'), 3000);
+        }
+
+        // ================================
+        // INIT
+        // ================================
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('vocalbox_admin') === 'true') {
+                showAdmin();
+            }
+        });
+
+        document.getElementById('loginInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+    </script>
+</body>
+</html>

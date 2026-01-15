@@ -1,0 +1,89 @@
+{
+  "tools": [
+    {
+      "type": "hangup",
+      "timeout_ms": 5000,
+      "hangup": {
+        "description": "Raccrocher quand la conversation est terminée"
+      }
+    },
+    {
+      "type": "webhook",
+      "timeout_ms": 5000,
+      "webhook": {
+        "name": "verifier_disponibilite",
+        "description": "Vérifie si des tables sont disponibles pour une date, heure et nombre de personnes donnés",
+        "url": "https://api.vokalbox.fr/api/reservations/check",
+        "method": "POST",
+        "body_template": "{\"restaurant_id\": \"{{restaurant_id}}\", \"date\": \"{{date}}\", \"time\": \"{{time}}\", \"party_size\": {{party_size}}}",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "restaurant_id": {
+              "type": "string",
+              "description": "ID du restaurant"
+            },
+            "date": {
+              "type": "string",
+              "description": "Date de réservation au format YYYY-MM-DD"
+            },
+            "time": {
+              "type": "string",
+              "description": "Heure de réservation au format HH:MM"
+            },
+            "party_size": {
+              "type": "integer",
+              "description": "Nombre de personnes"
+            }
+          },
+          "required": ["restaurant_id", "date", "time", "party_size"]
+        }
+      }
+    },
+    {
+      "type": "webhook",
+      "timeout_ms": 5000,
+      "webhook": {
+        "name": "creer_reservation",
+        "description": "Crée une nouvelle réservation dans la base de données",
+        "url": "https://api.vokalbox.fr/api/reservations/create",
+        "method": "POST",
+        "body_template": "{\"restaurant_id\": \"{{restaurant_id}}\", \"date\": \"{{date}}\", \"time\": \"{{time}}\", \"party_size\": {{party_size}}, \"customer_name\": \"{{customer_name}}\", \"customer_phone\": \"{{customer_phone}}\", \"call_id\": \"{{call_id}}\"}",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "restaurant_id": {
+              "type": "string",
+              "description": "ID du restaurant"
+            },
+            "date": {
+              "type": "string",
+              "description": "Date de réservation au format YYYY-MM-DD"
+            },
+            "time": {
+              "type": "string",
+              "description": "Heure de réservation au format HH:MM"
+            },
+            "party_size": {
+              "type": "integer",
+              "description": "Nombre de personnes"
+            },
+            "customer_name": {
+              "type": "string",
+              "description": "Nom du client"
+            },
+            "customer_phone": {
+              "type": "string",
+              "description": "Téléphone du client"
+            },
+            "call_id": {
+              "type": "string",
+              "description": "ID de l'appel Telnyx"
+            }
+          },
+          "required": ["restaurant_id", "date", "time", "party_size", "customer_name", "customer_phone"]
+        }
+      }
+    }
+  ]
+}

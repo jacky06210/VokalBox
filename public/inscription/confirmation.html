@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VokalBox - Paiement confirmé</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 700px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .status-box {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .status-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .progress-steps {
+            margin: 30px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .step.active {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+
+        .step.completed {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step.active .step-number {
+            background: #ffc107;
+            animation: pulse 2s infinite;
+        }
+
+        .step.completed .step-number {
+            background: #28a745;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .step-content h4 {
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .step-content p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .info-box h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(25, 118, 210, 0.1);
+        }
+
+        .info-box li:last-child {
+            border-bottom: none;
+        }
+
+        .loader {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .email-preview {
+            background: white;
+            border: 2px dashed #ccc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .email-preview h5 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="success-icon">✓</div>
+            <h1>Paiement confirmé !</h1>
+            <p id="restaurantName"></p>
+        </div>
+
+        <div class="content">
+            <div class="status-box">
+                <h3>📧 Email de confirmation envoyé</h3>
+                <p>Consultez votre boîte mail (<strong id="emailAddress"></strong>) pour plus de détails.</p>
+            </div>
+
+            <div class="progress-steps">
+                <div class="step completed">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Paiement validé</h4>
+                        <p>Votre paiement de 49€ HT a été confirmé</p>
+                    </div>
+                </div>
+
+                <div class="step active" id="stepDigitization">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Numérisation en cours</h4>
+                        <p>Notre IA traite vos menus... (environ 2-3 minutes)</p>
+                        <div class="loader">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step" id="stepValidation">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Validation du menu</h4>
+                        <p>Vous recevrez un email avec votre menu numérisé à valider</p>
+                    </div>
+                </div>
+
+                <div class="step" id="stepFinal">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Configuration finale</h4>
+                        <p>Réception de vos identifiants et numéro VokalBox sous 48h</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>📋 Prochaines étapes</h4>
+                <ul>
+                    <li>✉️ Vous allez recevoir un email avec votre menu numérisé</li>
+                    <li>👁️ Vérifiez que toutes les informations sont correctes</li>
+                    <li>⚠️ Si vous constatez des erreurs, signalez-les via le formulaire</li>
+                    <li>✅ Une fois validé, nous finaliserons votre installation</li>
+                    <li>📞 Vous recevrez vos identifiants et votre numéro VokalBox sous 48h</li>
+                </ul>
+            </div>
+
+            <div class="email-preview">
+                <h5>💡 Astuce</h5>
+                <p>Si vous ne recevez pas l'email de validation dans les 5 minutes, vérifiez vos spams ou contactez-nous à <strong>contact@vokalbox.fr</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        const urlParams = new URLSearchParams(window.location.search);
+        const inscriptionId = urlParams.get('id');
+
+        // Charger les informations de l'inscription
+        async function loadInscriptionInfo() {
+            try {
+                const response = await fetch(`${API_BASE}/api/inscription/status/${inscriptionId}`);
+                const data = await response.json();
+
+                if (data.nom_restaurant) {
+                    document.getElementById('restaurantName').textContent = data.nom_restaurant;
+                }
+
+                // Polling pour vérifier le statut de numérisation
+                const interval = setInterval(async () => {
+                    const statusResponse = await fetch(`${API_BASE}/api/inscription/status/${inscriptionId}`);
+                    const statusData = await statusResponse.json();
+
+                    if (statusData.digitization_status === 'completed') {
+                        clearInterval(interval);
+                        updateStepCompleted('stepDigitization');
+                        updateStepActive('stepValidation');
+                    } else if (statusData.digitization_status === 'error') {
+                        clearInterval(interval);
+                        updateStepError('stepDigitization');
+                    }
+                }, 10000); // Vérifier toutes les 10 secondes
+
+            } catch (error) {
+                console.error('Erreur chargement inscription:', error);
+            }
+        }
+
+        function updateStepCompleted(stepId) {
+            const step = document.getElementById(stepId);
+            step.classList.remove('active');
+            step.classList.add('completed');
+            const loader = step.querySelector('.loader');
+            if (loader) loader.remove();
+            step.querySelector('p').textContent = 'Numérisation terminée ! Consultez votre email.';
+        }
+
+        function updateStepActive(stepId) {
+            const step = document.getElementById(stepId);
+            step.classList.add('active');
+        }
+
+        function updateStepError(stepId) {
+            const step = document.getElementById(stepId);
+            step.classList.remove('active');
+            step.style.background = '#f8d7da';
+            step.style.borderColor = '#dc3545';
+            step.querySelector('p').textContent = 'Une erreur est survenue. Notre équipe technique a été notifiée.';
+        }
+
+        // Charger les infos au chargement de la page
+        if (inscriptionId) {
+            loadInscriptionInfo();
+        }
+    </script>
+</body>
+</html>
