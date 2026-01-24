@@ -315,7 +315,7 @@
 
             <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
                 <h3>📁 Cliquez pour uploader vos images</h3>
-                <p>Maximum 5 images, moins de 3MB chacune</p>
+                <p>Maximum 7 images, moins de 3MB chacune</p>
                 <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)">
             </div>
 
@@ -343,6 +343,7 @@
 
         let uploadedImages = [];
         let currentMenu = null;
+        let cart = [];
 
         // ===== UTILITAIRES =====
         function log(msg, data) {
@@ -358,6 +359,11 @@
 
         function clearError() {
             document.getElementById('errorSection').innerHTML = '';
+        }
+
+        function showSuccess(msg) {
+            document.getElementById('errorSection').innerHTML = `<div style="background:#d1fae5; color:#065f46; padding:15px; margin:20px 0; border-radius:8px; border-left:4px solid #10b981;">✅ ${msg}</div>`;
+            setTimeout(() => document.getElementById('errorSection').innerHTML = '', 3000);
         }
 
         // ===== LOGIN =====
@@ -391,8 +397,8 @@
                     showError(`Image "${file.name}" trop lourde (max 3MB)`);
                     return;
                 }
-                if (uploadedImages.length >= 5) {
-                    showError('Maximum 5 images');
+                if (uploadedImages.length >= 7) {
+                    showError('Maximum 7 images');
                     return;
                 }
                 const reader = new FileReader();
@@ -574,7 +580,7 @@
                 <div class="menu-editor">
                     <div class="form-group">
                         <label>Nom du restaurant</label>
-                        <input type="text" id="restaurantName" value="${esc(currentMenu.restaurantName)}" placeholder="Nom du restaurant">
+                        <input type="text" id="restaurantName" oninput="updateSlug()" value="${esc(currentMenu.restaurantName)}" placeholder="Nom du restaurant">
                     </div>
                     <div class="form-group">
                         <label>Code restaurant (ex: LAPART001)</label>
@@ -598,7 +604,81 @@
                             <input type="text" id="addressCity" placeholder="Paris">
                         </div>
                     </div>
-                    <h3 style="margin-bottom:20px">📋 ${catCount} catégories, ${itemCount} plats</h3>
+                    <!-- NOUVEAUX CHAMPS ONBOARDING -->
+                    <div class="form-group">
+                        <label>Slug (URL)</label>
+                        <input type="text" id="restaurantSlug" placeholder="cap-pizza" readonly style="background:#f0f0f0;">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="restaurantEmail" placeholder="contact@resto.fr">
+                    </div>
+                    <div class="form-group">
+                        <label>Horaires d'ouverture</label>
+                        <div id="horairesContainer" style="background:#f8f9fa; padding:15px; border-radius:8px; border:2px solid #ddd;">
+                            <div style="display:grid; grid-template-columns:100px 1fr 1fr 60px; gap:10px; margin-bottom:10px; font-weight:bold; font-size:13px; color:#666;">
+                                <span>Jour</span>
+                                <span>Midi</span>
+                                <span>Soir</span>
+                                <span>Fermé</span>
+                            </div>
+                            <div id="horairesList"></div>
+                        </div>
+                        <input type="hidden" id="restaurantHoraires">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                        <div class="form-group">
+                            <label>Facebook</label>
+                            <input type="url" id="restaurantFacebook" placeholder="https://facebook.com/resto">
+                        </div>
+                        <div class="form-group">
+                            <label>Instagram</label>
+                            <input type="url" id="restaurantInstagram" placeholder="https://instagram.com/resto">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><input type="checkbox" id="restaurantLivraison"> Livraison disponible</label>
+                    </div>
+
+                    <!-- SECTION SITE VITRINE -->
+                    <div class="vitrine-section" id="vitrineSection" style="display:none; margin:20px 0; padding:20px; background:#f8f4ff; border-radius:8px; border-left:4px solid #8b5cf6;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h3 style="margin:0; color:#7c3aed;">📌 Site Vitrine</h3>
+                            <span id="vitrineCount" style="background:#7c3aed; color:white; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:bold;">0 plats</span>
+                        </div>
+                        <div id="vitrineList" style="background:white; padding:15px; border-radius:6px; margin-bottom:15px; min-height:50px;" data-plats="[]">
+                            <p style="color:#999; text-align:center; margin:0;">Aucun plat en vitrine. Cliquez sur l'icône ⭐ d'un plat pour l'ajouter.</p>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="validateVitrine()" style="flex:1; padding:12px; background:#7c3aed; color:white; border:none; border-radius:6px; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s;">
+                                ✅ Valider le site vitrine
+                            </button>
+                            <button onclick="saveToGitHub()" style="flex:1; padding:12px; background:#10b981; color:white; border:none; border-radius:6px; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s;">
+                                💾 Sauvegarder sur GitHub
+                            </button>
+                        </div>
+                    </div>
+                    <!-- FIN SECTION SITE VITRINE -->
+
+                    <h3 style="margin-bottom:10px">📋 ${catCount} catégories, ${itemCount} plats</h3>
+                    <div style="display:flex; gap:20px; margin-bottom:20px; padding:10px; background:#f8fafc; border-radius:6px; font-size:13px;">
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <span style="width:24px; height:24px; background:#3b82f6; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:14px;">➕</span>
+                            <span style="color:#666;">Panier</span>
+                        </span>
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <span style="width:24px; height:24px; background:#dc2626; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:14px;">🏷️</span>
+                            <span style="color:#666;">Promo</span>
+                        </span>
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <span style="width:24px; height:24px; background:#f59e0b; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:14px;">🗑️</span>
+                            <span style="color:#666;">Supprimer</span>
+                        </span>
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <span style="width:24px; height:24px; background:#10b981; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:14px;">⭐</span>
+                            <span style="color:#666;">Vitrine</span>
+                        </span>
+                    </div>
             `;
 
             for (const [catName, items] of Object.entries(currentMenu.categories)) {
@@ -610,12 +690,41 @@
                         </div>
                 `;
                 items.forEach((item, i) => {
+                    // Calcul du prix avec promo si applicable
+                    const prixOriginal = parseFloat(item.price) || 0;
+                    const promoPercent = parseFloat(item.promo_pourcentage) || 0;
+                    const prixPromo = promoPercent > 0 ? prixOriginal * (1 - promoPercent / 100) : null;
+                    
+                    let prixDisplay = '';
+                    if (prixPromo !== null && promoPercent > 0) {
+                        // AVEC PROMO : afficher UNIQUEMENT prix barré + prix promo (pas d'input)
+                        prixDisplay = `
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="text-decoration:line-through; color:#999; font-size:16px;">${prixOriginal.toFixed(2)}€</span>
+                                <span style="color:#dc2626; font-weight:bold; font-size:18px;">${prixPromo.toFixed(2)}€</span>
+                            </div>
+                        `;
+                    } else {
+                        // SANS PROMO : afficher input prix normal avec symbole €
+                        prixDisplay = `
+                            <div style="display:flex; align-items:center; gap:4px;">
+                                <input type="number" step="0.01" value="${item.price||''}" placeholder="Prix" onchange="updateItem('${escJs(catName)}',${i},'price',this.value)" style="flex:1;">
+                                <span style="color:#666; font-size:14px;">€</span>
+                            </div>
+                        `;
+                    }
+                    
                     html += `
                         <div class="menu-item">
                             <input type="text" value="${esc(item.name)}" placeholder="Nom" onchange="updateItem('${escJs(catName)}',${i},'name',this.value)">
-                            <input type="number" step="0.01" value="${item.price||''}" placeholder="Prix" onchange="updateItem('${escJs(catName)}',${i},'price',this.value)">
+                            ${prixDisplay}
                             <input type="text" value="${esc(item.description)}" placeholder="Description" onchange="updateItem('${escJs(catName)}',${i},'description',this.value)">
-                            <button class="delete-btn" onclick="deleteItem('${escJs(catName)}',${i})">🗑️</button>
+                            <div style="display:flex; gap:5px; justify-content:flex-end;">
+                                <button class="cart-btn" onclick="addToCart('${escJs(catName)}',${i})" title="Ajouter au panier" style="width:35px; height:35px; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">➕</button>
+                                <button class="promo-btn" onclick="openPromoPopup('${escJs(catName)}',${i})" title="Définir une promo" style="width:35px; height:35px; background:#dc2626; color:white; border:none; border-radius:6px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">🏷️</button>
+                                <button class="delete-btn" onclick="deleteItem('${escJs(catName)}',${i})" title="Supprimer" style="width:35px; height:35px; background:#f59e0b; color:white; border:none; border-radius:6px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">🗑️</button>
+                                <button class="vitrine-btn" onclick="toggleVitrine('${escJs(catName)}',${i})" title="Ajouter à la vitrine" style="width:35px; height:35px; background:#10b981; color:white; border:none; border-radius:6px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">⭐</button>
+                            </div>
                         </div>
                     `;
                 });
@@ -629,6 +738,68 @@
             </div>`;
 
             section.innerHTML = html;
+            initHoraires();
+            updateHorairesHidden();
+        }
+
+
+        // ===== GÉNÉRATION SLUG =====
+        // ===== GESTION HORAIRES =====
+        const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+        function initHoraires() {
+            const container = document.getElementById('horairesList');
+            if (!container) return;
+            let html = '';
+            for (let i = 0; i < jours.length; i++) {
+                html += '<div style="display:grid;grid-template-columns:100px 1fr 1fr 60px;gap:10px;margin-bottom:8px;align-items:center;">';
+                html += '<span style="font-weight:600;">' + jours[i] + '</span>';
+                html += '<div style="display:flex;gap:5px;align-items:center;"><input type="time" id="midi_ouv_' + i + '" value="11:30" style="padding:5px;border:1px solid #ddd;border-radius:4px;"><span>-</span><input type="time" id="midi_fer_' + i + '" value="14:00" style="padding:5px;border:1px solid #ddd;border-radius:4px;"></div>';
+                html += '<div style="display:flex;gap:5px;align-items:center;"><input type="time" id="soir_ouv_' + i + '" value="18:30" style="padding:5px;border:1px solid #ddd;border-radius:4px;"><span>-</span><input type="time" id="soir_fer_' + i + '" value="22:00" style="padding:5px;border:1px solid #ddd;border-radius:4px;"></div>';
+                html += '<div style="text-align:center;"><input type="checkbox" id="ferme_' + i + '" onchange="toggleJour(' + i + ')" style="width:18px;height:18px;"></div>';
+                html += '</div>';
+            }
+            container.innerHTML = html;
+        }
+        function toggleJour(index) {
+            const ferme = document.getElementById('ferme_' + index).checked;
+            const prefixes = ['midi_ouv_', 'midi_fer_', 'soir_ouv_', 'soir_fer_'];
+            for (let p = 0; p < prefixes.length; p++) {
+                const input = document.getElementById(prefixes[p] + index);
+                if (input) { input.disabled = ferme; input.style.opacity = ferme ? '0.4' : '1'; }
+            }
+            updateHorairesHidden();
+        }
+        function updateHorairesHidden() {
+            let horaires = '';
+            for (let i = 0; i < jours.length; i++) {
+                const ferme = document.getElementById('ferme_' + i);
+                if (ferme && ferme.checked) { horaires += jours[i] + ': Ferme | '; }
+                else {
+                    const mo = document.getElementById('midi_ouv_' + i);
+                    const mf = document.getElementById('midi_fer_' + i);
+                    const so = document.getElementById('soir_ouv_' + i);
+                    const sf = document.getElementById('soir_fer_' + i);
+                    horaires += jours[i] + ': ' + (mo ? mo.value : '') + '-' + (mf ? mf.value : '') + ', ' + (so ? so.value : '') + '-' + (sf ? sf.value : '') + ' | ';
+                }
+            }
+            const hidden = document.getElementById('restaurantHoraires');
+            if (hidden) hidden.value = horaires;
+        }
+        function generateSlug(text) {
+            return text
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+        }
+
+        function updateSlug() {
+            const nameInput = document.getElementById('restaurantName');
+            const slugInput = document.getElementById('restaurantSlug');
+            if (nameInput && slugInput) {
+                slugInput.value = generateSlug(nameInput.value);
+            }
         }
 
         function esc(str) {
@@ -678,8 +849,31 @@
                 const addressStreet = document.getElementById('addressStreet').value.trim();
                 const addressPostal = document.getElementById('addressPostal').value.trim();
                 const addressCity = document.getElementById('addressCity').value.trim();
+                const slug = document.getElementById('restaurantSlug').value.trim();
+                const email = document.getElementById('restaurantEmail').value.trim();
+                const horaires = document.getElementById('restaurantHoraires').value.trim();
+                const facebook = document.getElementById('restaurantFacebook').value.trim();
+                const instagram = document.getElementById('restaurantInstagram').value.trim();
+                const livraison = document.getElementById('restaurantLivraison').checked;
                 
                 // Préparer le payload
+                // Transformer la structure pour l'API
+                // De: {catName: [{name, price, description}]}
+                // Vers: [{name, items: [{name, description, prices: [{label, value}]}]}]
+                const categoriesArray = Object.entries(currentMenu.categories).map(([catName, items]) => ({
+                    name: catName,
+                    items: items.map(item => ({
+                        name: item.name,
+                        description: item.description || null,
+                        prices: item.price ? [{
+                            label: 'Prix unique',
+                            value: item.price.toString(),
+                            originalPrice: null,
+                            promo: null
+                        }] : []
+                    }))
+                }));
+
                 const payload = {
                     restaurantName: name,
                     restaurantCode: restaurantCode,
@@ -689,8 +883,16 @@
                         postalCode: addressPostal || undefined,
                         city: addressCity || undefined
                     },
+                    slug: slug || undefined,
+                    horaires: horaires || undefined,
+                    facebook: facebook || undefined,
+                    instagram: instagram || undefined,
+                    livraison: livraison,
+                    contact: {
+                        email: email || undefined
+                    },
                     menuData: {
-                        categories: currentMenu.categories
+                        categories: categoriesArray
                     }
                 };
 
@@ -704,7 +906,7 @@
                 log('Sauvegarde', result);
 
                 if (!response.ok || result.success === false) {
-                    throw new Error(result.message || 'Erreur sauvegarde');
+                    throw new Error(result.message || result.error || 'Erreur sauvegarde');
                 }
 
                 const apiKey = result.apiKey || result.api_key || 'Non généré';
@@ -719,6 +921,12 @@
                         <h4 style="margin-top:15px">🔑 Clé API :</h4>
                         <div class="api-key-display">${esc(apiKey)}</div>
                         <p><small>Conservez cette clé pour VocalBoxCommande</small></p>
+                        <h4 style="margin-top:15px">🌐 Lien commande client :</h4>
+                        <div class="api-key-display" style="background:#10b981;">vokalbox.fr/resto/${esc(slug)}</div>
+                        <p><small>📞 Répondeur vocal : Actif sur ${esc(phoneNumber)}</small></p>
+                        <button class="btn" onclick="displayEditor()" style="margin-top:15px; margin-right:10px; background:#6b7280; color:white;">
+                            ← Retour à l'éditeur
+                        </button>
                         <button class="btn btn-primary" onclick="location.reload()" style="margin-top:15px">
                             📸 Nouveau scan
                         </button>
@@ -740,6 +948,505 @@
             a.download = name.replace(/\s+/g, '-').toLowerCase() + '.json';
             a.click();
         }
+
+        // Fonction pour valider le site vitrine
+        function validateVitrine() {
+            const vitrineList = document.getElementById('vitrineList');
+            if (!vitrineList || !vitrineList.dataset.plats) {
+                showError('Aucun plat en vitrine');
+                return;
+            }
+            
+            const platsVitrine = JSON.parse(vitrineList.dataset.plats || '[]');
+            if (platsVitrine.length === 0) {
+                showError('Aucun plat en vitrine');
+                return;
+            }
+            
+            showSuccess('✅ Site vitrine validé avec succès !');
+            console.log('Plats en vitrine:', platsVitrine);
+        }
+
+        // Fonction pour sauvegarder le restaurant sur GitHub
+        async function saveToGitHub() {
+            // Récupérer le phone_number du restaurant actuel
+            const phoneInput = document.getElementById('phoneNumber');
+            if (!phoneInput) {
+                showError('❌ Champ téléphone introuvable');
+                return;
+            }
+            
+            const phone = phoneInput.value.trim();
+            
+            if (!phone) {
+                showError('❌ Aucun numéro de téléphone saisi');
+                return;
+            }
+            
+            try {
+                showSuccess('⏳ Sauvegarde en cours...');
+                
+                const response = await fetch(`/api/menu-scan/export/${phone}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': 'REST-001'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('💾 Restaurant sauvegardé sur GitHub avec succès !');
+                    console.log('Export réussi:', data.output);
+                } else {
+                    showError('❌ Erreur: ' + data.error);
+                    console.error('Erreur export:', data);
+                }
+            } catch (error) {
+                showError('❌ Erreur de sauvegarde: ' + error.message);
+                console.error('Erreur:', error);
+            }
+        }
+
+        // ===== FONCTIONS PANIER =====
+        
+        // Ajouter au panier
+        function addToCart(cat, index) {
+            if (!currentMenu || !currentMenu.categories[cat]) return;
+            const item = currentMenu.categories[cat][index];
+            if (!item) return;
+            
+            // Calculer le prix avec promo si applicable
+            let prix = parseFloat(item.price) || 0;
+            if (item.promo_pourcentage > 0) {
+                prix = prix * (1 - item.promo_pourcentage / 100);
+            }
+            
+            // Vérifier si déjà dans le panier
+            const existingIndex = cart.findIndex(c => c.name === item.name && c.cat === cat);
+            if (existingIndex >= 0) {
+                cart[existingIndex].quantity += 1;
+            } else {
+                cart.push({
+                    name: item.name,
+                    cat: cat,
+                    prix: prix,
+                    quantity: 1
+                });
+            }
+            
+            updateCartDisplay();
+            showSuccess(`${item.name} ajouté au panier`);
+        }
+
+        // Modifier quantité
+        function updateCartQuantity(index, delta) {
+            if (!cart[index]) return;
+            cart[index].quantity += delta;
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            updateCartDisplay();
+        }
+
+        // Vider le panier
+        function clearCart() {
+            cart = [];
+            updateCartDisplay();
+            showSuccess('Panier vidé');
+        }
+
+        // Mettre à jour l'affichage
+        function updateCartDisplay() {
+            const panierList = document.getElementById('panierList');
+            const panierTotal = document.getElementById('panierTotal');
+            
+            if (cart.length === 0) {
+                panierList.innerHTML = '<p style="color:#999; text-align:center;">Panier vide</p>';
+                panierTotal.textContent = '0.00€';
+                return;
+            }
+            
+            let html = '';
+            let total = 0;
+            
+            cart.forEach((item, index) => {
+                const sousTotal = item.prix * item.quantity;
+                total += sousTotal;
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #e2e8f0;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <button onclick="updateCartQuantity(${index}, -1)" style="width:28px; height:28px; background:#dc2626; color:white; border:none; border-radius:4px; cursor:pointer;">-</button>
+                            <span style="font-weight:bold; min-width:20px; text-align:center;">${item.quantity}</span>
+                            <button onclick="updateCartQuantity(${index}, 1)" style="width:28px; height:28px; background:#10b981; color:white; border:none; border-radius:4px; cursor:pointer;">+</button>
+                        </div>
+                        <span style="flex:1; margin-left:15px;">${item.name}</span>
+                        <span style="font-weight:bold; color:#7c3aed;">${sousTotal.toFixed(2)}€</span>
+                    </div>
+                `;
+            });
+            
+            panierList.innerHTML = html;
+            panierTotal.textContent = total.toFixed(2) + '€';
+            updateCartCount();
+        }
+
+        // Mettre à jour le compteur du panier
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = count;
+        }
+
+        // Ouvrir la popup du panier
+        function openCartPopup() {
+            document.getElementById('cartPopup').style.display = 'flex';
+        }
+
+        // Fermer la popup du panier
+        function closeCartPopup() {
+            document.getElementById('cartPopup').style.display = 'none';
+        }
+
+        // Valider la commande
+        function validateOrder() {
+            if (cart.length === 0) {
+                showError('Le panier est vide');
+                return;
+            }
+            
+            let recap = 'RÉCAPITULATIF DE COMMANDE\n\n';
+            let total = 0;
+            cart.forEach(item => {
+                const sousTotal = item.prix * item.quantity;
+                total += sousTotal;
+                recap += `${item.quantity}x ${item.name} : ${sousTotal.toFixed(2)}€\n`;
+            });
+            recap += `\nTOTAL : ${total.toFixed(2)}€`;
+            
+            alert(recap);
+            showSuccess('Commande validée !');
+        }
+
+        // Fonction pour mettre à jour l'affichage de la vitrine
+        function updateVitrineDisplay() {
+            const vitrineSection = document.getElementById('vitrineSection');
+            const vitrineList = document.getElementById('vitrineList');
+            const vitrineCount = document.getElementById('vitrineCount');
+            
+            if (!vitrineSection || !vitrineList || !vitrineCount) return;
+            
+            const platsVitrine = JSON.parse(vitrineList.dataset.plats || '[]');
+            
+            if (platsVitrine.length === 0) {
+                vitrineSection.style.display = 'none';
+                vitrineList.innerHTML = '<p style="color:#999; text-align:center; margin:0;">Aucun plat en vitrine. Cliquez sur l\'icône ⭐ d\'un plat pour l\'ajouter.</p>';
+                vitrineCount.textContent = '0 plats';
+                return;
+            }
+            
+            vitrineSection.style.display = 'block';
+            vitrineCount.textContent = `${platsVitrine.length} plat${platsVitrine.length > 1 ? 's' : ''}`;
+            
+            // Grouper par catégorie
+            const groupedByCat = {};
+            platsVitrine.forEach(plat => {
+                if (!groupedByCat[plat.categorie]) {
+                    groupedByCat[plat.categorie] = [];
+                }
+                groupedByCat[plat.categorie].push(plat);
+            });
+            
+            // Afficher la liste
+            let html = '';
+            for (const [cat, plats] of Object.entries(groupedByCat)) {
+                html += `<div style="margin-bottom:15px;">
+                    <h4 style="color:#7c3aed; margin:0 0 8px 0; font-size:14px;">${cat}</h4>`;
+                
+                plats.forEach(plat => {
+                    const prixDisplay = plat.promo_pourcentage > 0 
+                        ? `<span style="text-decoration:line-through; color:#999; margin-right:5px;">${plat.prix}€</span><span style="color:#ef4444; font-weight:bold;">${(plat.prix * (1 - plat.promo_pourcentage / 100)).toFixed(2)}€</span>`
+                        : `<span style="font-weight:bold;">${plat.prix}€</span>`;
+                    
+                    html += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f0f0f0;">
+                        <span style="color:#333;">${plat.nom}</span>
+                        <span>${prixDisplay}</span>
+                    </div>`;
+                });
+                
+                html += `</div>`;
+            }
+            
+            vitrineList.innerHTML = html;
+            vitrineList.dataset.plats = JSON.stringify(platsVitrine);
+        }
+
+
+        // Fonction pour toggle un plat dans la vitrine
+        function toggleVitrine(cat, index) {
+            if (!currentMenu || !currentMenu.categories[cat]) return;
+            
+            const item = currentMenu.categories[cat][index];
+            if (!item) return;
+            
+            // Toggle l'état vitrine
+            item.vitrine = !item.vitrine;
+            item.vitrine_ordre = item.vitrine_ordre || 0;
+            
+            // Mettre à jour l'affichage du bouton
+            const buttons = document.querySelectorAll('.vitrine-btn');
+            buttons.forEach((btn, btnIndex) => {
+                if (btn.onclick.toString().includes(`'${cat}',${index}`)) {
+                    btn.style.background = item.vitrine ? '#10b981' : '#7c3aed';
+                    btn.textContent = item.vitrine ? '⭐' : '⭐';
+                    btn.title = item.vitrine ? 'Retirer de la vitrine' : 'Ajouter à la vitrine';
+                }
+            });
+            
+            // Mettre à jour l'affichage de la vitrine
+            updateVitrineFromMenu();
+            
+            showSuccess(item.vitrine ? `${item.name} ajouté à la vitrine` : `${item.name} retiré de la vitrine`);
+        }
+
+        // Fonction pour mettre à jour la vitrine à partir du menu
+        function updateVitrineFromMenu() {
+            if (!currentMenu) return;
+            
+            const vitrineList = document.getElementById('vitrineList');
+            if (!vitrineList) return;
+            
+            const platsVitrine = [];
+            
+            // Parcourir toutes les catégories et plats
+            for (const [catName, items] of Object.entries(currentMenu.categories)) {
+                items.forEach(item => {
+                    if (item.vitrine) {
+                        platsVitrine.push({
+                            id: item.id || 0,
+                            nom: item.name,
+                            categorie: catName,
+                            prix: parseFloat(item.price) || 0,
+                            promo_pourcentage: item.promo_pourcentage || 0,
+                            vitrine_ordre: item.vitrine_ordre || 0
+                        });
+                    }
+                });
+            }
+            
+            // Trier par catégorie puis par ordre
+            platsVitrine.sort((a, b) => {
+                if (a.categorie < b.categorie) return -1;
+                if (a.categorie > b.categorie) return 1;
+                return a.vitrine_ordre - b.vitrine_ordre;
+            });
+            
+            vitrineList.dataset.plats = JSON.stringify(platsVitrine);
+            updateVitrineDisplay();
+        }
+
+        // Variable globale pour stocker les infos du plat en cours d'édition promo
+        let currentPromoItem = null;
+
+        // Fonction pour ouvrir la popup promo
+        function openPromoPopup(cat, index) {
+            if (!currentMenu || !currentMenu.categories[cat]) return;
+            
+            const item = currentMenu.categories[cat][index];
+            if (!item || !item.price) {
+                showError('Prix du plat manquant');
+                return;
+            }
+            
+            currentPromoItem = { cat, index, item };
+            
+            // Remplir les infos du plat
+            document.getElementById('promoItemName').textContent = item.name;
+            document.getElementById('promoPrixOriginal').textContent = parseFloat(item.price).toFixed(2) + '€';
+            
+            // Initialiser avec la promo existante ou 0
+            const currentPromo = item.promo_pourcentage || 0;
+            document.getElementById('promoSlider').value = currentPromo;
+            document.getElementById('promoInput').value = currentPromo;
+            
+            // Mettre à jour l'aperçu
+            updatePromoPreview();
+            
+            // Afficher la popup
+            const popup = document.getElementById('promoPopup');
+            popup.style.display = 'flex';
+        }
+
+
+
+        // Fonction pour fermer la popup promo
+        function closePromoPopup() {
+            document.getElementById('promoPopup').style.display = 'none';
+            currentPromoItem = null;
+        }
+
+        // Fonction pour mettre à jour l'aperçu du prix en temps réel
+        function updatePromoPreview() {
+            if (!currentPromoItem) return;
+            
+            const slider = document.getElementById('promoSlider');
+            const input = document.getElementById('promoInput');
+            const prixOriginal = parseFloat(currentPromoItem.item.price);
+            const promoPercent = parseInt(slider.value);
+            
+            // Synchroniser l'input avec le slider
+            input.value = promoPercent;
+            
+            // Calculer le nouveau prix
+            const reduction = prixOriginal * (promoPercent / 100);
+            const nouveauPrix = prixOriginal - reduction;
+            
+            // Mettre à jour l'affichage
+            document.getElementById('promoPrixBarre').textContent = prixOriginal.toFixed(2) + '€';
+            document.getElementById('promoNouveauPrix').textContent = nouveauPrix.toFixed(2) + '€';
+            document.getElementById('promoEconomie').textContent = '-' + reduction.toFixed(2) + '€';
+            
+            // Afficher/masquer l'aperçu selon la promo
+            const preview = document.getElementById('promoPreview');
+            if (promoPercent > 0) {
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        // Fonction pour synchroniser le slider depuis l'input
+        function updatePromoFromInput() {
+            const input = document.getElementById('promoInput');
+            const slider = document.getElementById('promoSlider');
+            
+            let value = parseInt(input.value) || 0;
+            value = Math.max(0, Math.min(50, value)); // Limiter 0-50
+            
+            input.value = value;
+            slider.value = value;
+            
+            updatePromoPreview();
+        }
+
+        // Fonction pour appliquer la promotion
+        function applyPromo() {
+            if (!currentPromoItem) return;
+            
+            const promoPercent = parseInt(document.getElementById('promoSlider').value);
+            const { cat, index, item } = currentPromoItem;
+            
+            // Mettre à jour l'item
+            item.promo_pourcentage = promoPercent;
+            
+            // Mettre à jour l'affichage du bouton promo
+            const buttons = document.querySelectorAll('.promo-btn');
+            buttons.forEach(btn => {
+                if (btn.onclick.toString().includes(`'${cat}',${index}`)) {
+                    if (promoPercent > 0) {
+                        btn.style.background = '#dc2626'; // Rouge pour promo active
+                        btn.title = `Promo active: -${promoPercent}%`;
+                    } else {
+                        btn.style.background = '#f59e0b'; // Orange par défaut
+                        btn.title = 'Définir une promo';
+                    }
+                }
+            });
+            
+            // Mettre à jour la vitrine si le plat y est
+            updateVitrineFromMenu();
+            
+            // Rafraîchir l'affichage pour montrer le prix barré
+            displayEditor();
+            
+            // Fermer la popup
+            closePromoPopup();
+            
+            // Message de confirmation
+            if (promoPercent > 0) {
+                showSuccess(`Promo de ${promoPercent}% appliquée à "${item.name}"`);
+            } else {
+                showSuccess(`Promo retirée de "${item.name}"`);
+            }
+        }
+
     </script>
+
+    <!-- POPUP PROMO -->
+    <div id="promoPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; padding:30px; border-radius:12px; max-width:500px; width:90%; box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="margin:0; color:#dc2626;">🏷️ Définir une promotion</h3>
+                <button onclick="closePromoPopup()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#999;">&times;</button>
+            </div>
+            
+            <div style="margin-bottom:20px;">
+                <p style="margin:0 0 10px 0; color:#666; font-weight:600;" id="promoItemName">Nom du plat</p>
+                <p style="margin:0; color:#999; font-size:14px;">Prix actuel : <span id="promoPrixOriginal" style="font-weight:bold; color:#333;">0€</span></p>
+            </div>
+            
+            <div style="margin-bottom:25px;">
+                <label style="display:block; margin-bottom:10px; color:#666; font-weight:600;">Réduction (%)</label>
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <input type="range" id="promoSlider" min="0" max="50" value="0" 
+                           style="flex:1; height:6px; border-radius:3px; outline:none; background:#e5e7eb; cursor:pointer;"
+                           oninput="updatePromoPreview()">
+                    <input type="number" id="promoInput" min="0" max="50" value="0" 
+                           style="width:70px; padding:8px; border:2px solid #e5e7eb; border-radius:6px; text-align:center; font-size:18px; font-weight:bold; color:#dc2626;"
+                           oninput="updatePromoFromInput()">
+                    <span style="color:#dc2626; font-weight:bold; font-size:18px;">%</span>
+                </div>
+            </div>
+            
+            <div id="promoPreview" style="background:#fee2e2; padding:15px; border-radius:8px; margin-bottom:25px; border-left:4px solid #dc2626;">
+                <p style="margin:0 0 5px 0; color:#7f1d1d; font-size:13px; font-weight:600;">APERÇU DU PRIX</p>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span id="promoPrixBarre" style="text-decoration:line-through; color:#999; font-size:18px;">0€</span>
+                    <span style="color:#dc2626; font-size:24px; font-weight:bold;">→</span>
+                    <span id="promoNouveauPrix" style="color:#ef4444; font-size:24px; font-weight:bold;">0€</span>
+                    <span id="promoEconomie" style="background:#dc2626; color:white; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:bold; margin-left:auto;">-0€</span>
+                </div>
+            </div>
+            
+            <div style="display:flex; gap:10px;">
+                <button onclick="closePromoPopup()" 
+                        style="flex:1; padding:12px; background:#e5e7eb; color:#333; border:none; border-radius:6px; font-size:15px; font-weight:600; cursor:pointer;">
+                    Annuler
+                </button>
+                <button onclick="applyPromo()" 
+                        style="flex:1; padding:12px; background:#f59e0b; color:white; border:none; border-radius:6px; font-size:15px; font-weight:600; cursor:pointer;">
+                    ✅ Appliquer
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- FIN POPUP PROMO -->
+
+    <!-- Bouton flottant panier -->
+    <button id="openCartBtn" onclick="openCartPopup()" style="position:fixed; bottom:20px; right:20px; background:#7c3aed; color:white; border:none; padding:15px 25px; border-radius:50px; font-size:16px; font-weight:bold; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.3); z-index:999;">
+        🛒 Panier (<span id="cartCount">0</span>)
+    </button>
+
+    <!-- Popup panier -->
+    <div id="cartPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; padding:30px; border-radius:12px; max-width:500px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="margin:0; color:#7c3aed;">🛒 Panier de commande</h3>
+                <button onclick="closeCartPopup()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#999;">&times;</button>
+            </div>
+            <div id="panierList" style="min-height:50px; margin-bottom:15px;">
+                <p style="color:#999; text-align:center;">Panier vide</p>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:#7c3aed; color:white; border-radius:8px; margin-bottom:15px;">
+                <span style="font-weight:bold; font-size:18px;">TOTAL :</span>
+                <span id="panierTotal" style="font-weight:bold; font-size:24px;">0.00€</span>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button onclick="clearCart()" style="flex:1; padding:12px; background:#f59e0b; color:white; border:none; border-radius:6px; font-size:15px; font-weight:600; cursor:pointer;">Vider</button>
+                <button onclick="validateOrder()" style="flex:1; padding:12px; background:#10b981; color:white; border:none; border-radius:6px; font-size:15px; font-weight:600; cursor:pointer;">✅ Valider</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
