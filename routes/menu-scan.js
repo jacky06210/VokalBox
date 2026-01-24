@@ -442,7 +442,7 @@ NE RETOURNE QUE LE JSON, AUCUN TEXTE AVANT OU APRÈS.`
             
             menuData.stats = {
                 totalItems,
-                totalCategories: menuData.categories.length,
+                totalCategories: categoriesArray.length,
                 illisibleItems
             };
         }
@@ -496,8 +496,8 @@ router.post('/save', verifyRestaurantKey, async (req, res) => {
         let totalPlats = 0;
 
         // Insérer les nouvelles catégories et plats
-        for (let catIndex = 0; catIndex < menuData.categories.length; catIndex++) {
-            const category = menuData.categories[catIndex];
+        for (let catIndex = 0; catIndex < categoriesArray.length; catIndex++) {
+            const category = categoriesArray[catIndex];
             
             // Insérer la catégorie
             const [catResult] = await connection.execute(
@@ -537,11 +537,11 @@ router.post('/save', verifyRestaurantKey, async (req, res) => {
 
         res.json({
             success: true,
-            message: `Menu sauvegardé avec succès: ${totalPlats} plats dans ${menuData.categories.length} catégories`,
+            message: `Menu sauvegardé avec succès: ${totalPlats} plats dans ${categoriesArray.length} catégories`,
             apiKey: req.restaurant.api_key || req.restaurant.apiKey,
             totalPlats: totalPlats,
             itemsCount: totalPlats,
-            categories: menuData.categories.length
+            categories: categoriesArray.length
         });
 
     } catch (error) {
@@ -665,7 +665,12 @@ router.post('/save-with-restaurant', async (req, res) => {
             phoneNumber,
             menuData,
             address = {},
-            contact = {}
+            contact = {},
+            slug,
+            horaires,
+            facebook,
+            instagram,
+            livraison
         } = req.body;
         
         if (!restaurantName || !restaurantCode) {
@@ -700,7 +705,13 @@ router.post('/save-with-restaurant', async (req, res) => {
         } else {
             // Créer un nouveau restaurant
             const newApiKey = generateApiKey();
-            const phone = phoneNumber || '0000000000';
+            
+            // Validation du numéro de téléphone
+            if (!phoneNumber || phoneNumber === '0000000000' || phoneNumber.length < 10) {
+                await connection.rollback();
+                return res.status(400).json({ error: 'Numéro de téléphone invalide' });
+            }
+            const phone = phoneNumber;
             
             const [result] = await connection.execute(
                 `INSERT INTO restaurants (
@@ -713,9 +724,14 @@ router.post('/save-with-restaurant', async (req, res) => {
                     ville,
                     email,
                     site_web,
+                    slug,
+                    horaires,
+                    facebook,
+                    instagram,
+                    livraison_disponible,
                     actif,
                     statut_abonnement
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'actif')`,
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'actif')`,
                 [
                     restaurantCode,
                     restaurantName,
@@ -725,7 +741,12 @@ router.post('/save-with-restaurant', async (req, res) => {
                     address.postalCode || null,
                     address.city || null,
                     contact.email || null,
-                    contact.website || null
+                    contact.website || null,
+                    slug || null,
+                    horaires || null,
+                    facebook || null,
+                    instagram || null,
+                    livraison ? 1 : 0
                 ]
             );
             
@@ -740,11 +761,16 @@ router.post('/save-with-restaurant', async (req, res) => {
             [restaurantId]
         );
 
+        // Convertir objet en tableau si nécessaire
+        let categoriesArray = menuData.categories;
+        if (!Array.isArray(categoriesArray)) {
+            categoriesArray = Object.entries(menuData.categories).map(([name, items]) => ({ name, items }));
+        }
         let totalPlats = 0;
 
         // Insérer les nouvelles catégories et plats
-        for (let catIndex = 0; catIndex < menuData.categories.length; catIndex++) {
-            const category = menuData.categories[catIndex];
+        for (let catIndex = 0; catIndex < categoriesArray.length; catIndex++) {
+            const category = categoriesArray[catIndex];
             
             // Insérer la catégorie
             const [catResult] = await connection.execute(
@@ -788,13 +814,13 @@ router.post('/save-with-restaurant', async (req, res) => {
         
         res.json({
             success: true,
-            message: `Menu sauvegardé avec succès: ${totalPlats} plats dans ${menuData.categories.length} catégories`,
+            message: `Menu sauvegardé avec succès: ${totalPlats} plats dans ${categoriesArray.length} catégories`,
             restaurantId: restaurantId,
             restaurantName: restaurantName,
             apiKey: apiKey,
             totalPlats: totalPlats,
             itemsCount: totalPlats,
-            categories: menuData.categories.length
+            categories: categoriesArray.length
         });
 
     } catch (error) {
@@ -809,5 +835,242 @@ router.post('/save-with-restaurant', async (req, res) => {
     }
 });
 
+
+
+// ============================================
+// NOUVELLES ROUTES - VITRINE & PROMO
+// ============================================
+
+// PUT /api/menu-scan/plat/:id/vitrine - Toggle vitrine
+router.put('/plat/:id/vitrine', async (req, res) => {
+    const { id } = req.params;
+    const { vitrine, vitrine_ordre } = req.body;
+    const connection = await req.db.getConnection();
+    
+    try {
+        await connection.execute(
+            'UPDATE plats SET vitrine = ?, vitrine_ordre = ? WHERE id = ?',
+            [vitrine ? 1 : 0, vitrine_ordre || 0, id]
+        );
+        
+        res.json({ success: true, message: 'Vitrine mise à jour' });
+    } catch (error) {
+        console.error('Erreur toggle vitrine:', error);
+        res.status(500).json({ success: false, error: error.message });
+    } finally {
+        connection.release();
+    }
+});
+
+// PUT /api/menu-scan/plat/:id/promo - Définir % promo
+router.put('/plat/:id/promo', async (req, res) => {
+    const { id } = req.params;
+    const { promo_pourcentage } = req.body;
+    const connection = await req.db.getConnection();
+    
+    try {
+        const percentage = parseInt(promo_pourcentage) || 0;
+        const validPercentage = Math.max(0, Math.min(50, percentage));
+        
+        await connection.execute(
+            'UPDATE plats SET promo_pourcentage = ? WHERE id = ?',
+            [validPercentage, id]
+        );
+        
+        res.json({ 
+            success: true, 
+            message: 'Promo mise à jour',
+            promo_pourcentage: validPercentage
+        });
+    } catch (error) {
+        console.error('Erreur mise à jour promo:', error);
+        res.status(500).json({ success: false, error: error.message });
+    } finally {
+        connection.release();
+    }
+});
+
+// PUT /api/menu-scan/plat/:id/actif - Toggle actif
+router.put('/plat/:id/actif', async (req, res) => {
+    const { id } = req.params;
+    const { actif } = req.body;
+    const connection = await req.db.getConnection();
+    
+    try {
+        await connection.execute(
+            'UPDATE plats SET actif = ? WHERE id = ?',
+            [actif ? 1 : 0, id]
+        );
+        
+        res.json({ success: true, message: 'Statut actif mis à jour' });
+    } catch (error) {
+        console.error('Erreur toggle actif:', error);
+        res.status(500).json({ success: false, error: error.message });
+    } finally {
+        connection.release();
+    }
+});
+
+// GET /api/menu-scan/restaurant/:phone/vitrine - Liste vitrine par phone_number
+router.get('/restaurant/:phone/vitrine', async (req, res) => {
+    const { phone } = req.params;
+    const connection = await req.db.getConnection();
+    
+    try {
+        const [restaurants] = await connection.execute(
+            'SELECT id, nom FROM restaurants WHERE phone_number = ?',
+            [phone]
+        );
+        
+        if (restaurants.length === 0) {
+            return res.status(404).json({ success: false, error: 'Restaurant non trouvé' });
+        }
+        
+        const restaurantId = restaurants[0].id;
+        
+        const [plats] = await connection.execute(`
+            SELECT 
+                p.id, p.nom, p.description, p.vitrine_ordre, p.promo_pourcentage,
+                c.nom as categorie, pr.label as prix_label, pr.valeur as prix
+            FROM plats p
+            INNER JOIN categories c ON p.category_id = c.id
+            LEFT JOIN prix pr ON p.id = pr.plat_id
+            WHERE c.restaurant_id = ? AND p.vitrine = 1 AND p.actif = 1
+            ORDER BY c.nom, p.vitrine_ordre, p.nom
+        `, [restaurantId]);
+        
+        const vitrine = {};
+        for (const plat of plats) {
+            if (!vitrine[plat.categorie]) {
+                vitrine[plat.categorie] = [];
+            }
+            
+            let prixFinal = plat.prix;
+            let prixOriginal = null;
+            
+            if (plat.promo_pourcentage > 0) {
+                prixOriginal = plat.prix;
+                prixFinal = plat.prix * (1 - plat.promo_pourcentage / 100);
+            }
+            
+            const existingPlat = vitrine[plat.categorie].find(p => p.id === plat.id);
+            
+            if (!existingPlat) {
+                vitrine[plat.categorie].push({
+                    id: plat.id,
+                    nom: plat.nom,
+                    description: plat.description,
+                    prix: prixFinal,
+                    prix_original: prixOriginal,
+                    promo_pourcentage: plat.promo_pourcentage,
+                    prix_label: plat.prix_label
+                });
+            }
+        }
+        
+        res.json({ 
+            success: true, 
+            restaurant: restaurants[0].nom,
+            vitrine: vitrine 
+        });
+        
+    } catch (error) {
+        console.error('Erreur récupération vitrine:', error);
+        res.status(500).json({ success: false, error: error.message });
+    } finally {
+        connection.release();
+    }
+});
+
+// GET /api/menu-scan/restaurant/:phone/menu-tarifs - Menu tarifs (noms + prix seulement)
+// GET /api/menu-scan/restaurant/:phone/menu-tarifs - Menu tarifs (noms + prix seulement)
+router.get('/restaurant/:phone/menu-tarifs', async (req, res) => {
+    const connection = await req.db.getConnection();
+    try {
+        const { phone } = req.params;
+        
+        const [plats] = await connection.execute(`
+            SELECT 
+                p.nom,
+                pr.valeur as prix,
+                c.nom as categorie
+            FROM plats p
+            JOIN categories c ON p.category_id = c.id
+            LEFT JOIN prix pr ON p.id = pr.plat_id
+            JOIN restaurants r ON c.restaurant_id = r.id
+            WHERE r.phone_number = ?
+            AND p.actif = 1
+            ORDER BY c.nom, p.nom
+        `, [phone]);
+
+        res.json(plats);
+    } catch (error) {
+        console.error('Erreur récupération menu tarifs:', error);
+        res.status(500).json({ error: 'Erreur serveur' });
+    } finally {
+        connection.release();
+    }
+});
+
+// GET /api/menu-scan/restaurant/:phone/menu-complet - Menu complet (noms + prix + compositions)
+router.get('/restaurant/:phone/menu-complet', async (req, res) => {
+    const connection = await req.db.getConnection();
+    try {
+        const { phone } = req.params;
+        
+        const [plats] = await connection.execute(`
+            SELECT 
+                p.nom,
+                pr.valeur as prix,
+                p.description as composition,
+                c.nom as categorie
+            FROM plats p
+            JOIN categories c ON p.category_id = c.id
+            LEFT JOIN prix pr ON p.id = pr.plat_id
+            JOIN restaurants r ON c.restaurant_id = r.id
+            WHERE r.phone_number = ?
+            AND p.actif = 1
+            ORDER BY c.nom, p.nom
+        `, [phone]);
+
+        res.json(plats);
+    } catch (error) {
+        console.error('Erreur récupération menu complet:', error);
+        res.status(500).json({ error: 'Erreur serveur' });
+    } finally {
+        connection.release();
+    }
+});
+// ============================================
+router.post('/export/:phone', async (req, res) => {
+    const { phone } = req.params;
+    
+    if (!phone) {
+        return res.status(400).json({ success: false, error: 'Numéro de téléphone requis' });
+    }
+    
+    const scriptPath = '/home/vocalbox/mes-restaurants/export-restaurant.sh';
+    const { exec } = require('child_process');
+    
+    console.log(`[EXPORT] Lancement export pour ${phone}`);
+    
+    exec(`${scriptPath} ${phone}`, (error, stdout, stderr) => {
+        if (error) {
+            console.error('[EXPORT] Erreur:', error);
+            return res.status(500).json({ 
+                success: false, 
+                error: error.message, 
+                stderr: stderr 
+            });
+        }
+        
+        console.log('[EXPORT] Succès:', stdout);
+        res.json({ 
+            success: true, 
+            message: 'Restaurant exporté avec succès sur GitHub', 
+            output: stdout 
+        });
+    });
+});
 
 module.exports = router;
